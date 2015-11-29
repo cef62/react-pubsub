@@ -19,12 +19,9 @@
     "decorator",
     "pubsub"
   ],
-  "author": "Matteo Ronchi",
-  "contributors": [
-    {
-      "name": "Stefano Ceschi Berrini",
-      "url": "http://stecb.ninja/"
-    }
+  "authors": [
+    "Matteo Ronchi (https://github.com/cef62)",
+    "Stefano Ceschi Berrini (https://github.com/stecb)"
   ],
   "license": "MIT",
   "bugs": {
