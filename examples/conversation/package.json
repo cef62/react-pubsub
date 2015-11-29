@@ -1,0 +1,38 @@
+{
+  "name": "react-pubsub-conversation-example",
+  "version": "0.0.0",
+  "description": "simple example of use of react-pubsub",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cef62/react-pubsub.git"
+  },
+  "keywords": [
+    "react",
+    "decorator",
+    "pubsub"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cef62/react-pubsub/issues"
+  },
+  "homepage": "https://github.com/cef62/react-pubsub",
+  "dependencies": {},
+  "devDependencies": {
+    "babel": "5.8.34",
+    "babel-core": "5.8.34",
+    "babel-eslint": "4.1.6",
+    "babel-loader": "5.4.0",
+    "express": "4.13.3",
+    "node-libs-browser": "0.5.2",
+    "react-transform-catch-errors": "1.0.0",
+    "react-transform-hmr": "1.0.1",
+    "redbox-react": "1.2.0",
+    "webpack": "1.12.9",
+    "webpack-dev-middleware": "1.4.0",
+    "webpack-hot-middleware": "2.5.1"
+  }
+}

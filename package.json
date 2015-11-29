@@ -1,0 +1,52 @@
+{
+  "name": "react-pubsub",
+  "version": "0.0.1",
+  "description": "PubSub abstraction layer for React, should support any compliant pub-sub libray.",
+  "main": "lib/index.js",
+  "scripts": {
+    "clean": "rimraf lib dist",
+    "build": "babel src --out-dir lib",
+    "build:umd": "webpack src/index.js dist/react-pubsub.js && NODE_ENV=production webpack src/index.js dist/react-pubsub.min.js",
+    "lint": "./node_modules/.bin/eslint src test examples",
+    "prepublish": "npm run lint && npm run clean && npm run build && npm run build:umd"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cef62/react-pubsub.git"
+  },
+  "keywords": [
+    "react",
+    "decorator",
+    "pubsub"
+  ],
+  "author": "Matteo Ronchi",
+  "contributors": [
+    {
+      "name": "Stefano Ceschi Berrini",
+      "url": "http://stecb.ninja/"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cef62/react-pubsub/issues"
+  },
+  "homepage": "https://github.com/cef62/react-pubsub",
+  "devDependencies": {
+    "babel": "5.8.34",
+    "babel-core": "5.8.34",
+    "babel-eslint": "4.1.6",
+    "babel-loader": "5.4.0",
+    "eslint": "1.10.2",
+    "eslint-config-airbnb": "1.0.2",
+    "eslint-plugin-react": "3.10.0",
+    "react": "0.14.3",
+    "react-dom": "0.14.3",
+    "rimraf": "2.4.4",
+    "watch": "0.16.0",
+    "webpack": "1.12.9"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "react": ">=0.14.0"
+  }
+}
