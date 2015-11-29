@@ -9,7 +9,7 @@
     "react/jsx-uses-react": 2,
     "react/jsx-uses-vars": 2,
     "react/react-in-jsx-scope": 2,
-    "react/jsx-quotes": 2,
+    "jsx-quotes": 2,
     "id-length": 0,
     "radix": 0
   },
