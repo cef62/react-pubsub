@@ -44,4 +44,3 @@ test('createPubSubAdapter: should throws if doesn\'t receive a valid adapter', t
   });
   t.end();
 });
-
