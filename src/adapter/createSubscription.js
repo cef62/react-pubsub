@@ -16,7 +16,7 @@ const createSubscription = (component, autoUnmount = true, adapter) => {
       return () => {
         const idx = sub.subscriptions.indexOf(token);
         if (idx < 0) {
-          throw new Error('PubSub Error trying to unsubscribe a not recognized token');
+          throw new Error('PubSub Error: you\'re trying to unsubscribe an unrecognized token');
         }
         sub.subscriptions.splice(idx, 1);
         adapter.unsubscribe(token);

@@ -21,7 +21,7 @@ const createPubSubAdapter = () => {
     },
     publish(action, params) {
       if (!hOP.call(actions, action)) {
-        console.warn(`You're try to publish to an unregisterd action ${action}`); // eslint-disable-line no-console
+        console.warn(`The action '${action}' being published has no listeners`); // eslint-disable-line no-console
         return;
       }
       actions[action].forEach( (cb) => cb.apply(undefined, params) );
