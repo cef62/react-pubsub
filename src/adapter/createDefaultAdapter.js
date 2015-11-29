@@ -30,4 +30,3 @@ const createPubSubAdapter = () => {
 };
 
 export default createPubSubAdapter;
-
