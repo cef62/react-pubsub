@@ -45,5 +45,14 @@
   "dependencies": {},
   "peerDependencies": {
     "react": ">=0.14.0"
-  }
+  },
+  "npmName": "react-pubsub",
+  "npmFileMap": [
+    {
+      "basePath": "/dist/",
+      "files": [
+        "*.js"
+      ]
+    }
+  ]
 }
