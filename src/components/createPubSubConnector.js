@@ -27,8 +27,8 @@ const createPubSubConnector = Composed => {
     pubSubCore: pubSubShape,
   };
 
-  PubSubConnector.displayName = `PubSubConnector(${getDisplayName(Component)})`;
-  PubSubConnector.WrappedComponent = Component;
+  PubSubConnector.displayName = `PubSubConnector(${getDisplayName(Composed)})`;
+  PubSubConnector.WrappedComponent = Composed;
 
   return PubSubConnector;
 };
