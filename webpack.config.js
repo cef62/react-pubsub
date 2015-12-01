@@ -2,6 +2,13 @@
 
 var webpack = require('webpack');
 
+var reactExternal = {
+  root: 'React',
+  commonjs2: 'react',
+  commonjs: 'react',
+  amd: 'react'
+};
+
 var plugins = [
   new webpack.optimize.OccurenceOrderPlugin(),
   new webpack.DefinePlugin({
@@ -21,6 +28,9 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 module.exports = {
+  externals: {
+    'react': reactExternal
+  },
   module: {
     loaders: [{
       test: /\.js$/,
