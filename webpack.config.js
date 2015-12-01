@@ -13,18 +13,21 @@ var plugins = [
   new webpack.optimize.OccurenceOrderPlugin(),
   new webpack.DefinePlugin({
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+  }),
+  new webpack.optimize.CommonsChunkPlugin({
+    name: "global",
+    chunks: ["main"], // important because elsewise it would use "vendor" too
+    minChunks: Infinity
   })
 ];
 
 if (process.env.NODE_ENV === 'production') {
   plugins.push(
     new webpack.optimize.UglifyJsPlugin({
-      compressor: {
-        screw_ie8: true,
-        warnings: false
-      }
-    })
-  );
+    compressor: {
+      screw_ie8: true,
+      warnings: false
+    }}));
 }
 
 module.exports = {
