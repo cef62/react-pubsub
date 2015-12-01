@@ -21,7 +21,8 @@
   },
   "homepage": "https://github.com/cef62/react-pubsub",
   "dependencies": {
-    "postal": "1.0.7"
+    "postal": "1.0.7",
+    "react-dom": "0.14.3"
   },
   "devDependencies": {
     "babel": "5.8.34",
