@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import 'babel-core/register';
 import createPubSubAdapter from '../../src/adapter/createPubSubAdapter';
 
-test('createPubSubAdapter: should return an object with a specific interface', t => {
+test('should return an object with a specific interface', t => {
   const api = createPubSubAdapter({});
   t.true(api.hasOwnProperty('publish'));
   t.true(api.hasOwnProperty('subscribe'));
@@ -11,7 +11,7 @@ test('createPubSubAdapter: should return an object with a specific interface', t
   t.end();
 });
 
-test('createPubSubAdapter: should expose correct methods from given adapter', t => {
+test('should expose correct methods from given adapter', t => {
   const api = createPubSubAdapter({
     publish: sinon.spy(),
     subscribe: sinon.spy(),
@@ -29,7 +29,7 @@ test('createPubSubAdapter: should expose correct methods from given adapter', t 
   t.end();
 });
 
-test('createPubSubAdapter: should throws if doesn\'t receive a valid adapter', t => {
+test('should throws if doesn\'t receive a valid adapter', t => {
   t.throws(() => {
     const api = createPubSubAdapter();
     api.publish();
