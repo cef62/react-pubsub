@@ -9,7 +9,8 @@
     "build:umd": "webpack src/index.js dist/react-pubsub.js && NODE_ENV=production webpack src/index.js dist/react-pubsub.min.js",
     "lint": "./node_modules/.bin/eslint src test examples",
     "prepublish": "npm run lint && npm run clean && npm run build && npm run build:umd",
-    "test": "node_modules/.bin/ava test/**"
+    "test": "node_modules/.bin/ava test/**",
+    "test:watch": "watch 'npm run test'"
   },
   "repository": {
     "type": "git",
@@ -38,7 +39,9 @@
     "eslint": "1.10.2",
     "eslint-config-airbnb": "1.0.2",
     "eslint-plugin-react": "3.10.0",
+    "jsdom": "7.1.1",
     "react": "0.14.3",
+    "react-addons-test-utils": "0.14.3",
     "rimraf": "2.4.4",
     "sinon": "1.17.2",
     "watch": "0.16.0",
