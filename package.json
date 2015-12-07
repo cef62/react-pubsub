@@ -1,6 +1,6 @@
 {
   "name": "react-pubsub",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "PubSub abstraction layer for React, should support any compliant pub-sub libray.",
   "main": "lib/index.js",
   "scripts": {
