@@ -15,8 +15,9 @@ const createPubSubConnector = Composed => {
     }
 
     componentWillUnmount() {
-      this.pubSubCore.unregister(this);
+      this.pubSub.unsubscribe();
       delete this.pubSub;
+      delete this.pubSubCore;
     }
 
     render() {

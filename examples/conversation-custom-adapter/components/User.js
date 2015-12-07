@@ -10,8 +10,9 @@ export default class User extends Component {
   }
 
   componentWillUnmount() {
-    this.context.pubSubCore.unregister(this);
+    this.pubSub.unsubscribe();
     delete this.pubSub;
+    delete this.pubSubCore;
   }
 
   talk() {

@@ -13,10 +13,11 @@ import createPubSubAdapter from './createPubSubAdapter';
    */
 const createPubSub = (subscribersMap = {}, adapter = createDefaultAdapter()) => {
   const adapterAPI = createPubSubAdapter(adapter);
-  return {
+  const api = {
     register(component) {
       if (!subscribersMap[component]) {
-        subscribersMap[component] = createSubscription(component, adapterAPI);
+        const unsubscribe = () => api.unregister(component);
+        subscribersMap[component] = createSubscription(component, adapterAPI, unsubscribe);
       }
       return subscribersMap[component];
     },
@@ -29,5 +30,6 @@ const createPubSub = (subscribersMap = {}, adapter = createDefaultAdapter()) => 
       }
     },
   };
+  return api;
 };
 export default createPubSub;

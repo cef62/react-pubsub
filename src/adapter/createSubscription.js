@@ -6,9 +6,9 @@
    @param adapter object the pubsub adapter
    @return the subscription object
    */
-const createSubscription = (component, adapter) => {
+const createSubscription = (component, adapter, unsubscribe) => {
   const sub = {
-    componentWillUnmount: component.componentWillUnmount,
+    unsubscribe,
     subscriptions: [],
     add(action, cb) {
       const token = adapter.subscribe(action, cb);
