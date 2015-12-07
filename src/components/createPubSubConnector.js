@@ -20,9 +20,14 @@ const createPubSubConnector = Composed => {
       delete this.pubSubCore;
     }
 
+    getWrappedInstance() {
+      return this.refs.wrappedInstance;
+    }
+
     render() {
       const { pubSub } = this;
-      return createElement(Composed, Object.assign({ pubSub }, this.props));
+      const ref = 'wrappedInstance';
+      return createElement(Composed, Object.assign({ pubSub, ref }, this.props));
     }
   }
 
