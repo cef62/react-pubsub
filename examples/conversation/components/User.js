@@ -9,6 +9,11 @@ export default class User extends Component {
     this.state = {};
   }
 
+  componentWillUnmount() {
+    this.context.pubSubCore.unregister(this);
+    delete this.pubSub;
+  }
+
   talk() {
     const { owner } = this.props;
     const { publish } = this.pubSub;

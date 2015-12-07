@@ -14,9 +14,9 @@ import createPubSubAdapter from './createPubSubAdapter';
 const createPubSub = (subscribersMap = {}, adapter = createDefaultAdapter()) => {
   const adapterAPI = createPubSubAdapter(adapter);
   return {
-    register(component, autoUnmount = true) {
+    register(component) {
       if (!subscribersMap[component]) {
-        subscribersMap[component] = createSubscription(component, autoUnmount, adapterAPI);
+        subscribersMap[component] = createSubscription(component, adapterAPI);
       }
       return subscribersMap[component];
     },

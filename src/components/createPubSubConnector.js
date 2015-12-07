@@ -14,6 +14,11 @@ const createPubSubConnector = Composed => {
       this.pubSub = this.pubSubCore.register(this);
     }
 
+    componentWillUnmount() {
+      this.pubSubCore.unregister(this);
+      delete this.pubSub;
+    }
+
     render() {
       const { pubSub } = this;
       return createElement(Composed, Object.assign({ pubSub }, this.props));

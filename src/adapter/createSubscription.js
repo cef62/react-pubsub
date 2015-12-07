@@ -6,8 +6,8 @@
    @param adapter object the pubsub adapter
    @return the subscription object
    */
-const createSubscription = (component, autoUnmount = true, adapter) => {
-  let sub = {
+const createSubscription = (component, adapter) => {
+  const sub = {
     componentWillUnmount: component.componentWillUnmount,
     subscriptions: [],
     add(action, cb) {
@@ -30,17 +30,6 @@ const createSubscription = (component, autoUnmount = true, adapter) => {
       adapter.publish(action, params);
     },
   };
-
-  if (autoUnmount) {
-    component.componentWillUnmount = () => {
-      const { componentWillUnmount, removeAll } = sub;
-      if (componentWillUnmount) {
-        componentWillUnmount.apply(component);
-      }
-      removeAll();
-      sub = void 0;
-    };
-  }
 
   return sub;
 };
