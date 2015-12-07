@@ -1,4 +1,5 @@
 import { Component, createElement } from 'react';
+import hoistStatics from 'hoist-non-react-statics';
 import pubSubShape from '../utils/pubSubShape';
 
 function getDisplayName(WrappedComponent) {
@@ -15,7 +16,7 @@ const createPubSubConnector = Composed => {
 
     render() {
       const { pubSub } = this;
-      return createElement(Composed, Object.assign({pubSub}, this.props));
+      return createElement(Composed, Object.assign({ pubSub }, this.props));
     }
   }
 
@@ -30,7 +31,7 @@ const createPubSubConnector = Composed => {
   PubSubConnector.displayName = `PubSubConnector(${getDisplayName(Composed)})`;
   PubSubConnector.WrappedComponent = Composed;
 
-  return PubSubConnector;
+  return hoistStatics(PubSubConnector, Composed);
 };
 
 export default createPubSubConnector;
