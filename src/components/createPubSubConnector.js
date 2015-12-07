@@ -1,5 +1,6 @@
 import { Component, createElement } from 'react';
 import hoistStatics from 'hoist-non-react-statics';
+import invariant from 'invariant';
 import pubSubShape from '../utils/pubSubShape';
 
 function getDisplayName(WrappedComponent) {
@@ -10,7 +11,16 @@ const createPubSubConnector = Composed => {
   class PubSubConnector extends Component {
     constructor(props, context) {
       super(props, context);
-      this.pubSubCore = props.pubSubCore || context.pubSubCore; // eslint-disable-line react/prop-types
+      this.pubSubCore = props.pubSubCore || context.pubSubCore;
+
+      invariant(
+        this.pubSubCore,
+        `Could not find "pubSubCore" in either the context or `
+        + `props of "${this.constructor.displayName}". `
+        + `Either wrap the root component in a <PubSubProvider>, `
+        + `or explicitly pass "pubSubCore" as a prop to "${this.constructor.displayName}".`
+      );
+
       this.pubSub = this.pubSubCore.register(this);
     }
 
