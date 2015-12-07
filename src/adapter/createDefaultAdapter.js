@@ -10,7 +10,7 @@ const createPubSubAdapter = () => {
       return [action, cb];
     },
     unsubscribe(token) {
-      const [ action, cb ] = token;
+      const [action, cb] = token;
       const callbacks = actions[action];
       const idx = callbacks.indexOf(cb);
       if (idx < 0) {
@@ -24,7 +24,7 @@ const createPubSubAdapter = () => {
         console.warn(`The action '${action}' being published has no listeners`); // eslint-disable-line no-console
         return;
       }
-      actions[action].forEach( (cb) => cb.apply(undefined, params) );
+      actions[action].forEach((cb) => cb.apply(undefined, params));
     },
   };
 };

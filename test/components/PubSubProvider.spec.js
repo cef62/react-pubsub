@@ -38,13 +38,13 @@ test.serial('should enforce a single child', t => {
 
     t.throws(() => TestUtils.renderIntoDocument(
       <PubSubProvider pubSubCore={pubSubCore} />
-    ), /exactly one child/ );
+    ), /exactly one child/);
 
     t.throws(() => TestUtils.renderIntoDocument(
       <PubSubProvider pubSubCore={pubSubCore}>
       <div /> <div />
       </PubSubProvider>
-    ), /exactly one child/ );
+    ), /exactly one child/);
   } finally {
     // Restore PropTypes
     PubSubProvider.propTypes = propTypes;

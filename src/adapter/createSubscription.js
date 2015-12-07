@@ -23,7 +23,7 @@ const createSubscription = (component, autoUnmount = true, adapter) => {
       };
     },
     removeAll() {
-      sub.subscriptions.forEach( token => adapter.unsubscribe(token) );
+      sub.subscriptions.forEach(token => adapter.unsubscribe(token));
       sub.subscriptions = [];
     },
     publish(action, ...params) {
