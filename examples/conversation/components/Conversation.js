@@ -11,10 +11,10 @@ class Conversation extends Component {
 
   componentDidMount() {
     const { pubSub: { add } } = this.props;
-    add(TALK, ({msg, owner}) => {
+    add(TALK, ({ msg, owner }) => {
       const { conversation: oldConversation = '' } = this.state;
       const conversation = `${oldConversation}\n[${owner}]: ${msg}`;
-      this.setState( { conversation });
+      this.setState({ conversation });
     });
   }
 
@@ -32,4 +32,4 @@ Conversation.propTypes = {
   pubSub: subscriptionShape.isRequired,
 };
 
-export default createPubSubConnector(Conversation);
+export default createPubSubConnector()(Conversation);

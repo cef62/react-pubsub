@@ -43,4 +43,4 @@ ConnectedUser.propTypes = {
   owner: PropTypes.string.isRequired,
 };
 
-export default createPubSubConnector(ConnectedUser);
+export default createPubSubConnector()(ConnectedUser);

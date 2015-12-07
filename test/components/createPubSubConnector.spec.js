@@ -46,7 +46,7 @@ test('should add the PubSub core to the child context', t => {
       return (<div {...this.props} />);
     }
   }
-  const WrapperContainer = createPubSubConnector(Container);
+  const WrapperContainer = createPubSubConnector()(Container);
 
   const tree = TestUtils.renderIntoDocument(
     <ProviderMock pubSubCore={pubSubCore}>
@@ -68,7 +68,7 @@ test('should pass props to the given component', t => {
       return (<Passthrough {...this.props} />);
     }
   }
-  const WrapperContainer = createPubSubConnector(Container);
+  const WrapperContainer = createPubSubConnector()(Container);
 
   const container = TestUtils.renderIntoDocument(
     <ProviderMock pubSubCore={pubSubCore}>
@@ -103,7 +103,7 @@ test('should pass pubSub subscriptions as props to the given component', t => {
       return (<Passthrough {...this.props} />);
     }
   }
-  const WrapperContainer = createPubSubConnector(Container);
+  const WrapperContainer = createPubSubConnector()(Container);
 
   const container = TestUtils.renderIntoDocument(
     <ProviderMock pubSubCore={pubSubCore}>
@@ -141,7 +141,7 @@ test('should unsubscribe before unmounting', t => {
       return (<Passthrough {...this.props} />);
     }
   }
-  const WrapperContainer = createPubSubConnector(Container);
+  const WrapperContainer = createPubSubConnector()(Container);
 
   const div = document.createElement('div');
   ReactDOM.render(
@@ -167,7 +167,7 @@ test('should hoist non-react statics from wrapped component', t => {
   Container.extraMethodSay = () => 'Hey there!';
   Container.foo = 'bar';
 
-  const WrappedContainer = createPubSubConnector(Container);
+  const WrappedContainer = createPubSubConnector()(Container);
 
   t.is(typeof WrappedContainer.extraMethodSay, 'function');
   t.is(WrappedContainer.extraMethodSay(), 'Hey there!');
@@ -183,7 +183,7 @@ test('should use the pubSub core from the props instead of from the context if p
       return (<Passthrough />);
     }
   }
-  const WrappedContainer = createPubSubConnector(Container);
+  const WrappedContainer = createPubSubConnector()(Container);
 
   const container = TestUtils.renderIntoDocument(<WrappedContainer pubSubCore={pubSubCore} />);
   t.is(container.pubSubCore, pubSubCore);
@@ -197,7 +197,7 @@ test('should throw an error if the pubSub core is not in the props or context', 
       return (<Passthrough />);
     }
   }
-  const WrappedContainer = createPubSubConnector(Container);
+  const WrappedContainer = createPubSubConnector()(Container);
 
   t.throws(
     () => TestUtils.renderIntoDocument(<WrappedContainer />),
@@ -221,7 +221,7 @@ test('should return the instance of the wrapped component for use in calling chi
       return (<Passthrough />);
     }
   }
-  const WrappedComponent = createPubSubConnector(Container);
+  const WrappedComponent = createPubSubConnector({ withRef: true })(Container);
 
   const tree = TestUtils.renderIntoDocument(
     <ProviderMock pubSubCore={pubSubCore}>
@@ -238,8 +238,6 @@ test('should return the instance of the wrapped component for use in calling chi
   t.end();
 });
 
-/* TODO: enable after support for managed ref is landed
-
 test('should subscribe pure function components to the pubSub core', t => {
   const subscription = {
     add: sinon.spy(),
@@ -251,7 +249,7 @@ test('should subscribe pure function components to the pubSub core', t => {
     unregister() {},
   };
 
-  const Container = createPubSubConnector(function Container(props) {
+  const Container = createPubSubConnector()(function Container(props) {
     return (<Passthrough {...props}/>);
   });
 
@@ -263,7 +261,6 @@ test('should subscribe pure function components to the pubSub core', t => {
   );
   console.error.restore();
   t.is(spy.callCount, 0);
-  console.warn(spy.returnValues[0]);
 
   const stub = TestUtils.findRenderedComponentWithType(tree, Passthrough);
   const cb = () => {};
@@ -280,4 +277,3 @@ test('should subscribe pure function components to the pubSub core', t => {
 
   t.end();
 });
-*/
