@@ -7,9 +7,11 @@ React-PubSub enable support to any compliant PubSub libray via `custom adapters`
 
 The library is just 5kB, has no dependencies and comes with an internal PubSub implementation.
 
+[![build status](https://img.shields.io/travis/cef62/react-pubsub/master.svg?style=flat-square)](https://travis-ci.org/cef62/react-pubsub) [![npm version](https://img.shields.io/npm/v/react-pubsub.svg?style=flat-square)](https://www.npmjs.com/package/react-pubsub) [![npm downloads](https://img.shields.io/npm/dm/react-pubsub.svg?style=flat-square)](https://www.npmjs.com/package/react-pubsub)
+
 # Installation
 
-React-Pubsub requires React 0.14 or later.
+React-Pubsub requires **React 0.14** or later.
 
 ## Using npm based module bundlers
 
