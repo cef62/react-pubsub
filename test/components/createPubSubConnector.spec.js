@@ -167,11 +167,117 @@ test('should hoist non-react statics from wrapped component', t => {
   Container.extraMethodSay = () => 'Hey there!';
   Container.foo = 'bar';
 
-  const decorated = createPubSubConnector(Container);
+  const WrappedContainer = createPubSubConnector(Container);
 
-  t.is(typeof decorated.extraMethodSay, 'function');
-  t.is(decorated.extraMethodSay(), 'Hey there!');
-  t.is(decorated.foo, 'bar');
+  t.is(typeof WrappedContainer.extraMethodSay, 'function');
+  t.is(WrappedContainer.extraMethodSay(), 'Hey there!');
+  t.is(WrappedContainer.foo, 'bar');
 
   t.end();
 });
+
+test('should use the pubSub core from the props instead of from the context if present', t => {
+  const pubSubCore = { register() {}, unregister() {} };
+  class Container extends Component {
+    render() {
+      return (<Passthrough />);
+    }
+  }
+  const WrappedContainer = createPubSubConnector(Container);
+
+  const container = TestUtils.renderIntoDocument(<WrappedContainer pubSubCore={pubSubCore} />);
+  t.is(container.pubSubCore, pubSubCore);
+
+  t.end();
+});
+
+test('should throw an error if the pubSub core is not in the props or context', t => {
+  class Container extends Component {
+    render() {
+      return (<Passthrough />);
+    }
+  }
+  const WrappedContainer = createPubSubConnector(Container);
+
+  t.throws(
+    () => TestUtils.renderIntoDocument(<WrappedContainer />),
+    /Could not find "pubSubCore"/
+  );
+
+  t.end();
+});
+
+
+test('should return the instance of the wrapped component for use in calling child methods', t => {
+  const pubSubCore = { register() {}, unregister() {} };
+  const someData = { some: 'data' };
+
+  class Container extends Component {
+    someInstanceMethod() {
+      return someData;
+    }
+
+    render() {
+      return (<Passthrough />);
+    }
+  }
+  const WrappedComponent = createPubSubConnector(Container);
+
+  const tree = TestUtils.renderIntoDocument(
+    <ProviderMock pubSubCore={pubSubCore}>
+    <WrappedComponent />
+    </ProviderMock>
+  );
+
+  const decorated = TestUtils.findRenderedComponentWithType(tree, WrappedComponent);
+
+  t.throws(() => decorated.someInstanceMethod());
+  t.is(decorated.getWrappedInstance().someInstanceMethod(), someData);
+  t.is(decorated.refs.wrappedInstance.someInstanceMethod(), someData);
+
+  t.end();
+});
+
+/* TODO: enable after support for managed ref is landed
+
+test('should subscribe pure function components to the pubSub core', t => {
+  const subscription = {
+    add: sinon.spy(),
+    removeAll: sinon.spy(),
+    publish: sinon.spy(),
+  };
+  const pubSubCore = {
+    register: () => subscription,
+    unregister() {},
+  };
+
+  const Container = createPubSubConnector(function Container(props) {
+    return (<Passthrough {...props}/>);
+  });
+
+  const spy = sinon.spy(console, 'error');
+  const tree = TestUtils.renderIntoDocument(
+    <ProviderMock pubSubCore={pubSubCore}>
+    <Container />
+    </ProviderMock>
+  );
+  console.error.restore();
+  t.is(spy.callCount, 0);
+  console.warn(spy.returnValues[0]);
+
+  const stub = TestUtils.findRenderedComponentWithType(tree, Passthrough);
+  const cb = () => {};
+  const action = { msg: 'message' };
+  subscription.add('test_action', cb);
+  subscription.publish('test_action', action);
+  subscription.removeAll();
+  t.is(stub.props.pubSub, subscription);
+  t.true(subscription.add.calledOnce);
+  t.true(subscription.add.calledWith('test_action', cb));
+  t.true(subscription.publish.calledOnce);
+  t.true(subscription.publish.calledWith('test_action', action));
+  t.true(subscription.removeAll.calledOnce);
+
+  t.end();
+});
+*/
