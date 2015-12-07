@@ -20,9 +20,7 @@
     "url": "https://github.com/cef62/react-pubsub/issues"
   },
   "homepage": "https://github.com/cef62/react-pubsub",
-  "dependencies": {
-    "react-dom": "0.14.3"
-  },
+  "dependencies": {},
   "devDependencies": {
     "babel": "5.8.34",
     "babel-core": "5.8.34",
