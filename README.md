@@ -1,5 +1,7 @@
 # React-PubSub
 
+## Attention the library is stable but the API is under heavy refactoring. Not ready for production until refactoring is complete.
+
 ---
 
 React-PubSub is an abstraction layer for React. The idea is to enable PubSub communication between React components, completely decoupling the PubSub layer and its consumption.
