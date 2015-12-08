@@ -68,8 +68,8 @@ export default class App extends Component {
 ```
 ## Connector Component
 
-Any children of **PubSubProvider** who require access to the PubSub API should
-be wrapped by a **PubSub Connector**. The connector will pass `pubSub` as **prop** to its child component.
+Any children of **PubSubProvider** who require access to the PubSub API should be wrapped by a **PubSub Connector**.
+The connector will pass `pubSub` as **prop** to its child component.
 
 Create the Connected Component:
 
@@ -96,8 +96,9 @@ ConnectedComponent.propTypes = {
   pubSub: subscriptionShape.isRequired,
 };
 
-export default createPubSubConnector(ConnectedComponent);
+export default createPubSubConnector()(ConnectedComponent);
 ```
+**Attention** `createPubSubConnector` must be invoked twice, first with configuration parameters and the returned function with the component to be wrapped.
 
 ### Remove subscribed events
 

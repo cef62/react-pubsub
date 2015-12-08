@@ -1,14 +1,107 @@
 import { Component, createElement } from 'react';
 import hoistStatics from 'hoist-non-react-statics';
 import invariant from 'invariant';
+import isPlainObject from '../utils/isPlainObject';
 import pubSubShape from '../utils/pubSubShape';
+
+const defaultRetriveProps = () => ({});
 
 function getDisplayName(WrappedComponent) {
   return WrappedComponent.displayName || WrappedComponent.name || 'Component';
 }
 
-export default function createPubSubConnector(options = {}) {
+export default function createPubSubConnector(mapSubscriptionsToProps, options = {}) {
+  const shouldMapSubscriptions = Boolean(mapSubscriptionsToProps);
   const { withRef = false } = options;
+
+  let mappedSubscriptions = {};
+  function registerMappedSubscriptions(pubSub, subscriptionsMap = {}, setState, getProps) {
+    const { add } = pubSub;
+
+    // TODO: may be necessary to support hot reload
+    const mappedSubscriptionsKeys = Object.keys(mappedSubscriptions);
+    if (mappedSubscriptionsKeys.length) {
+      mappedSubscriptionsKeys.forEach(key => mappedSubscriptions[key].unsubscribe());
+    }
+
+    if (!Object.keys(subscriptionsMap).length) {
+      return;
+    }
+
+    invariant(
+      Object.keys(subscriptionsMap)
+      .every(key => (
+        typeof subscriptionsMap[key] === 'function' || typeof subscriptionsMap[key] === 'string')),
+        `Every mapped Subscription of "createPubSubConnector" must be a function`
+        + `returning the value to be passed as prop to the decorated component.`
+    );
+
+    const updateMappedSubscriptions = (key, transformerOrAlias) => {
+      let callback;
+      if (typeof transformerOrAlias === 'function') {
+        callback = (retrieveProps = defaultRetriveProps) =>
+        (...args) => {
+          // store received values
+          mappedSubscriptions[key].lastResult = args;
+
+          // transform values
+          const newValues = transformerOrAlias(args, retrieveProps());
+
+          invariant(
+            isPlainObject(newValues),
+            `Transformer functions for mapped subscriptions must return a plain object, `
+            + `instead received %s.`
+          );
+
+          invariant(
+            Object.keys(newValues).length,
+            `Transformer functions for mapped subscriptions must return an object`
+            + `with at least one property.`
+          );
+
+          // TODO: add controls to avoid triggering setState if value isn't changed and
+          setState(newValues);
+        };
+      } else {
+        callback = result => setState({ [transformerOrAlias]: result });
+      }
+
+      return callback;
+    };
+
+    mappedSubscriptions = Object.keys(subscriptionsMap)
+    .reduce((acc, key) => {
+      const refresh = updateMappedSubscriptions(key, subscriptionsMap[key]);
+      let callback = refresh;
+      if (typeof subscriptionsMap[key] === 'function') {
+        callback = refresh(getProps);
+      }
+      acc[key] = {
+        key,
+        refresh,
+        unsubscribe: add(key, callback),
+      };
+      return acc;
+    }, {});
+  }
+
+  function refreshMappedSubscriptions(subscriptionsMap = {}, getProps) {
+    const mappedSubscriptionsKeys = Object.keys(mappedSubscriptions);
+    if (!mappedSubscriptionsKeys.length) {
+      return;
+    }
+
+    Object.keys(subscriptionsMap)
+    .forEach(key => {
+      if (
+        typeof subscriptionsMap[key] === 'function'
+          && typeof mappedSubscriptions[key] !== 'undefined'
+      ) {
+        const { refresh, lastResult } = mappedSubscriptions[key];
+        refresh(getProps)(...lastResult);
+      }
+    });
+  }
 
   return function wrapComponent(Composed) {
     class PubSubConnector extends Component {
@@ -25,18 +118,41 @@ export default function createPubSubConnector(options = {}) {
         );
 
         this.pubSub = this.pubSubCore.register(this);
+        if (shouldMapSubscriptions) {
+          registerMappedSubscriptions(
+            this.pubSub,
+            mapSubscriptionsToProps,
+            (...args) => this.setState(...args),
+            () => this.props
+          );
+        }
+      }
+
+      componentWillUpdate(nextProps) {
+        if (this.props === nextProps) {
+          return;
+        }
+
+        if (shouldMapSubscriptions) {
+          refreshMappedSubscriptions(
+            mapSubscriptionsToProps,
+            () => nextProps
+          );
+        }
       }
 
       componentWillUnmount() {
+        mappedSubscriptions = {};
         this.pubSub.unsubscribe();
         delete this.pubSub;
         delete this.pubSubCore;
       }
 
       getWrappedInstance() {
-        invariant(withRef,
-          `To access the wrapped instance, you need to specify explicitly` +
-          `{ withRef: true } in the options passed to the createPubSubConnector() call.`
+        invariant(
+          withRef,
+          `To access the wrapped instance, you need to specify explicitly`
+          + `{ withRef: true } in the options passed to the createPubSubConnector() call.`
         );
 
         return this.refs.wrappedInstance;
@@ -45,7 +161,7 @@ export default function createPubSubConnector(options = {}) {
       render() {
         const { pubSub } = this;
         const ref = withRef ? 'wrappedInstance' : null;
-        return createElement(Composed, Object.assign({ pubSub, ref }, this.props));
+        return createElement(Composed, Object.assign({ pubSub, ref }, this.props, this.state));
       }
     }
 

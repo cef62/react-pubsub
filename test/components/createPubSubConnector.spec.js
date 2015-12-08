@@ -221,7 +221,7 @@ test('should return the instance of the wrapped component for use in calling chi
       return (<Passthrough />);
     }
   }
-  const WrappedComponent = createPubSubConnector({ withRef: true })(Container);
+  const WrappedComponent = createPubSubConnector(null, { withRef: true })(Container);
 
   const tree = TestUtils.renderIntoDocument(
     <ProviderMock pubSubCore={pubSubCore}>
@@ -277,3 +277,76 @@ test('should subscribe pure function components to the pubSub core', t => {
 
   t.end();
 });
+
+test(
+  'should map subscriptions defined in `mapSubscriptionsToProps` and '
+  + 'pass their payload as props to wrapped component',
+  t => {
+    const SPEAK = 'speak';
+    const UPDATE = 'update';
+    const pubSubCore = createPubSub();
+    const register = pubSubCore.register;
+    let pubSub;
+    pubSubCore.register = (...args) => {
+      pubSub = register(...args);
+      return pubSub;
+    };
+
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+
+    class ControlledState extends Component {
+      constructor() {
+        super();
+        this.state = { updateField: 'label' };
+      }
+
+      render() {
+        const { updateField } = this.state;
+        return (<WrapperContainer updateField={updateField} />);
+      }
+    }
+
+    const mapSubscriptionsToProps = {
+      [SPEAK]: 'lastMessage',
+      [UPDATE]: (args, props) => {
+        const [payload = {}] = args;
+        const { updateField: key } = props;
+        return { updatedField: payload[key] };
+      },
+    };
+    const WrapperContainer = createPubSubConnector(mapSubscriptionsToProps)(Container);
+
+    const tree = TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+      <ControlledState />
+      </ProviderMock>
+    );
+    const stub = TestUtils.findRenderedComponentWithType(tree, Passthrough);
+    const wrapper = TestUtils.findRenderedComponentWithType(tree, ControlledState);
+
+    t.is(stub.props.lastMessage, undefined);
+    pubSub.publish(SPEAK, 'Hey there!');
+    t.is(stub.props.lastMessage, 'Hey there!');
+
+    t.is(stub.props.updatedField, undefined);
+    pubSub.publish(UPDATE, { label: 'myLabel', name: 'myName' });
+    t.is(stub.props.updatedField, 'myLabel');
+    wrapper.setState({ updateField: 'name' });
+
+    t.is(stub.props.updatedField, 'myName');
+    pubSub.publish(UPDATE, { label: 'myLabel', name: 'myNewName' });
+    t.is(stub.props.updatedField, 'myNewName');
+
+    pubSub.publish(UPDATE, { label: 'myLabel' });
+    t.is(stub.props.updatedField, undefined);
+
+    pubSub.publish(SPEAK, 'New Message');
+    t.is(stub.props.lastMessage, 'New Message');
+
+    t.end();
+  }
+);
