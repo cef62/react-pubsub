@@ -1,6 +1,5 @@
 import { Component, createElement } from 'react';
 import hoistStatics from 'hoist-non-react-statics';
-import invariant from 'invariant';
 import isPlainObject from '../utils/isPlainObject';
 import pubSubShape from '../utils/pubSubShape';
 
@@ -18,7 +17,7 @@ export default function createPubSubConnector(mapSubscriptionsToProps, options =
   function registerMappedSubscriptions(pubSub, subscriptionsMap = {}, setState, getProps) {
     const { add } = pubSub;
 
-    // TODO: may be necessary to support hot reload
+    // TODO: should be necessary to support hot reload
     const mappedSubscriptionsKeys = Object.keys(mappedSubscriptions);
     if (mappedSubscriptionsKeys.length) {
       mappedSubscriptionsKeys.forEach(key => mappedSubscriptions[key].unsubscribe());
@@ -28,13 +27,15 @@ export default function createPubSubConnector(mapSubscriptionsToProps, options =
       return;
     }
 
-    invariant(
-      Object.keys(subscriptionsMap)
-      .every(key => (
-        typeof subscriptionsMap[key] === 'function' || typeof subscriptionsMap[key] === 'string')),
+    const validMappedSubscriptions = Object.keys(subscriptionsMap)
+    .every(key => (typeof subscriptionsMap[key] === 'function' || typeof subscriptionsMap[key] === 'string'));
+
+    if (!validMappedSubscriptions) {
+      throw new Error(
         `Every mapped Subscription of "createPubSubConnector" must be a function`
         + `returning the value to be passed as prop to the decorated component.`
-    );
+      );
+    }
 
     const updateMappedSubscriptions = (key, transformerOrAlias) => {
       let callback;
@@ -47,17 +48,19 @@ export default function createPubSubConnector(mapSubscriptionsToProps, options =
           // transform values
           const newValues = transformerOrAlias(args, retrieveProps());
 
-          invariant(
-            isPlainObject(newValues),
-            `Transformer functions for mapped subscriptions must return a plain object, `
-            + `instead received %s.`
-          );
+          if (!isPlainObject(newValues)) {
+            throw new Error(
+              `Transformer functions for mapped subscriptions must return a plain object, `
+              + `instead received %s.`
+            );
+          }
 
-          invariant(
-            Object.keys(newValues).length,
-            `Transformer functions for mapped subscriptions must return an object`
-            + `with at least one property.`
-          );
+          if (!Object.keys(newValues).length) {
+            throw new Error(
+              `Transformer functions for mapped subscriptions must return an object`
+              + `with at least one property.`
+            );
+          }
 
           // TODO: add controls to avoid triggering setState if value isn't changed and
           setState(newValues);
@@ -109,13 +112,14 @@ export default function createPubSubConnector(mapSubscriptionsToProps, options =
         super(props, context);
         this.pubSubCore = props.pubSubCore || context.pubSubCore;
 
-        invariant(
-          this.pubSubCore,
-          `Could not find "pubSubCore" in either the context or `
-          + `props of "${this.constructor.displayName}". `
-          + `Either wrap the root component in a <PubSubProvider>, `
-          + `or explicitly pass "pubSubCore" as a prop to "${this.constructor.displayName}".`
-        );
+        if (!this.pubSubCore) {
+          throw new Error(
+            `Could not find "pubSubCore" in either the context or `
+            + `props of "${this.constructor.displayName}". `
+            + `Either wrap the root component in a <PubSubProvider>, `
+            + `or explicitly pass "pubSubCore" as a prop to "${this.constructor.displayName}".`
+          );
+        }
 
         this.pubSub = this.pubSubCore.register(this);
         if (shouldMapSubscriptions) {
@@ -149,12 +153,12 @@ export default function createPubSubConnector(mapSubscriptionsToProps, options =
       }
 
       getWrappedInstance() {
-        invariant(
-          withRef,
-          `To access the wrapped instance, you need to specify explicitly`
-          + `{ withRef: true } in the options passed to the createPubSubConnector() call.`
-        );
-
+        if (!withRef) {
+          throw new Error(
+            `To access the wrapped instance, you need to specify explicitly`
+            + `{ withRef: true } in the options passed to the createPubSubConnector() call.`
+          );
+        }
         return this.refs.wrappedInstance;
       }
 
