@@ -336,7 +336,6 @@ test(
     pubSub.publish(UPDATE, { label: 'myLabel', name: 'myName' });
     t.is(stub.props.updatedField, 'myLabel');
     wrapper.setState({ updateField: 'name' });
-
     t.is(stub.props.updatedField, 'myName');
     pubSub.publish(UPDATE, { label: 'myLabel', name: 'myNewName' });
     t.is(stub.props.updatedField, 'myNewName');
@@ -346,6 +345,65 @@ test(
 
     pubSub.publish(SPEAK, 'New Message');
     t.is(stub.props.lastMessage, 'New Message');
+
+    t.end();
+  }
+);
+
+test(
+  'should update mapped subscriptions defined in `mapSubscriptionsToProps` when'
+  + ' props changes only if the callback defines a second arguments in its signature',
+  t => {
+    const SIMPLE_UPDATE = 'simpleUpdate';
+    const pubSubCore = createPubSub();
+    const register = pubSubCore.register;
+    let pubSub;
+    pubSubCore.register = (...args) => {
+      pubSub = register(...args);
+      return pubSub;
+    };
+
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+
+    class ControlledState extends Component {
+      constructor() {
+        super();
+        this.state = { updateField: 'label' };
+      }
+
+      render() {
+        const { updateField } = this.state;
+        return (<WrapperContainer updateField={updateField} />);
+      }
+    }
+
+    const mapSubscriptionsToProps = {
+      [SIMPLE_UPDATE]: (args) => {
+        const [payload = {}] = args;
+        const now = new Date().getTime();
+        return { simpleField: payload.name, now };
+      },
+    };
+    const WrapperContainer = createPubSubConnector(mapSubscriptionsToProps)(Container);
+
+    const tree = TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+      <ControlledState />
+      </ProviderMock>
+    );
+    const stub = TestUtils.findRenderedComponentWithType(tree, Passthrough);
+    const wrapper = TestUtils.findRenderedComponentWithType(tree, ControlledState);
+
+    t.is(stub.props.simpleField, undefined);
+    pubSub.publish(SIMPLE_UPDATE, { name: 'john' });
+    t.is(stub.props.simpleField, 'john');
+    const nowValue = stub.props.now;
+    wrapper.setState({ updateField: 'label' });
+    t.is(stub.props.now, nowValue);
 
     t.end();
   }

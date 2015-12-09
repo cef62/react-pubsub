@@ -40,10 +40,12 @@ export default function createPubSubConnector(mapSubscriptionsToProps, options =
     const updateMappedSubscriptions = (key, transformerOrAlias) => {
       let callback;
       if (typeof transformerOrAlias === 'function') {
+        const shouldUpdateSubscriptionProps = transformerOrAlias.length > 1;
         callback = (retrieveProps = defaultRetriveProps) =>
         (...args) => {
           // store received values
           mappedSubscriptions[key].lastResult = args;
+          mappedSubscriptions[key].shouldUpdateSubscriptionProps = shouldUpdateSubscriptionProps;
 
           // transform values
           const newValues = transformerOrAlias(args, retrieveProps());
@@ -100,8 +102,15 @@ export default function createPubSubConnector(mapSubscriptionsToProps, options =
         typeof subscriptionsMap[key] === 'function'
           && typeof mappedSubscriptions[key] !== 'undefined'
       ) {
-        const { refresh, lastResult } = mappedSubscriptions[key];
-        refresh(getProps)(...lastResult);
+        const {
+          refresh,
+          lastResult,
+          shouldUpdateSubscriptionProps,
+        } = mappedSubscriptions[key];
+
+        if (shouldUpdateSubscriptionProps) {
+          refresh(getProps)(...lastResult);
+        }
       }
     });
   }
