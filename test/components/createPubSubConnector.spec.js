@@ -278,6 +278,7 @@ test('should subscribe pure function components to the pubSub core', t => {
   t.end();
 });
 
+// TODO: improve this test, splitting it in more atomic scenarios
 test(
   'should map subscriptions defined in `mapSubscriptionsToProps` and '
   + 'pass their payload as props to wrapped component',
@@ -409,53 +410,148 @@ test(
   }
 );
 
-// test('should not invoke mapPublish when props change if it only has one argument', t => {
-//   const pubSubCore = createPubSub();
-//
-//   let invocationCount = 0;
-//
-//   const mapPublish = () => {
-//     invocationCount++;
-//     return {};
-//   };
-//
-//   class WithoutProps extends Component {
-//     render() {
-//       return (<Passthrough {...this.props}/>);
-//     }
-//   }
-//   const WrappedContainer = createPubSubConnector(null, mapPublish)(WithoutProps);
-//
-//   class OuterComponent extends Component {
-//     constructor() {
-//       super();
-//       this.state = { foo: 'FOO' };
-//     }
-//
-//     setFoo(foo) {
-//       this.setState({ foo });
-//     }
-//
-//     render() {
-//       return (
-//         <div>
-//         <WrappedContainer {...this.state} />
-//         </div>
-//       );
-//     }
-//   }
-//
-//   let outerComponent;
-//   TestUtils.renderIntoDocument(
-//     <ProviderMock pubSubCore={pubSubCore}>
-//     <OuterComponent ref={c => outerComponent = c} />
-//     </ProviderMock>
-//   );
-//
-//   outerComponent.setFoo('BAR');
-//   outerComponent.setFoo('DID');
-//
-//   t.is(invocationCount, 1);
-//
-//   t.end();
-// });
+// TODO: create a similar test for 'mapSubscriptionsToProps'
+test('should not invoke mapPublish when props change if it only has one argument', t => {
+  const pubSubCore = createPubSub();
+
+  let invocationCount = 0;
+
+  const mapPublish = () => {
+    invocationCount++;
+    return {};
+  };
+
+  class WithoutProps extends Component {
+    render() {
+      return (<Passthrough {...this.props}/>);
+    }
+  }
+  const WrappedContainer = createPubSubConnector(null, mapPublish)(WithoutProps);
+
+  class OuterComponent extends Component {
+    constructor() {
+      super();
+      this.state = { foo: 'FOO' };
+    }
+
+    setFoo(foo) {
+      this.setState({ foo });
+    }
+
+    render() {
+      return (
+        <div>
+        <WrappedContainer {...this.state} />
+        </div>
+      );
+    }
+  }
+
+  let outerComponent;
+  TestUtils.renderIntoDocument(
+    <ProviderMock pubSubCore={pubSubCore}>
+    <OuterComponent ref={c => outerComponent = c} />
+    </ProviderMock>
+  );
+
+  outerComponent.setFoo('BAR');
+  outerComponent.setFoo('DID');
+
+  t.is(invocationCount, 1);
+
+  t.end();
+});
+
+// TODO: create a similar test for 'mapSubscriptionsToProps'
+test('should invoke mapPublish every time props are changed if it has a second argument', t => {
+  const pubSubCore = createPubSub();
+
+  let invocationCount = 0;
+  let propsPassedIn;
+
+  const mapPublish = (args, props) => { // eslint-disable-line no-unused-vars
+    invocationCount++;
+    propsPassedIn = props;
+    return {};
+  };
+
+  class WithoutProps extends Component {
+    render() {
+      return (<Passthrough {...this.props}/>);
+    }
+  }
+  const WrappedContainer = createPubSubConnector(null, mapPublish)(WithoutProps);
+
+  class OuterComponent extends Component {
+    constructor() {
+      super();
+      this.state = { foo: 'FOO' };
+    }
+
+    setFoo(foo) {
+      this.setState({ foo });
+    }
+
+    render() {
+      return (
+        <div>
+        <WrappedContainer {...this.state} />
+        </div>
+      );
+    }
+  }
+
+  let outerComponent;
+  TestUtils.renderIntoDocument(
+    <ProviderMock pubSubCore={pubSubCore}>
+    <OuterComponent ref={c => outerComponent = c} />
+    </ProviderMock>
+  );
+
+  outerComponent.setFoo('BAR');
+  outerComponent.setFoo('DID');
+
+  t.is(invocationCount, 3);
+  t.same(propsPassedIn, { foo: 'DID' });
+
+  t.end();
+});
+
+test('should pass publish and avoid subscription if arguments are falsy', t => {
+  const pubSubCore = createPubSub();
+  const register = pubSubCore.register;
+  let pubSub;
+  pubSubCore.register = (...args) => {
+    pubSub = register(...args);
+    return pubSub;
+  };
+
+  function runCheck(...connectArgs) {
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+    const WrappedContainer = createPubSubConnector(...connectArgs)(Container);
+
+    const container = TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+      <WrappedContainer pass="through" />
+      </ProviderMock>
+    );
+    const stub = TestUtils.findRenderedComponentWithType(container, Passthrough);
+
+    t.is(stub.props.publish, pubSub.publish);
+    t.is(stub.props.foo, undefined);
+    t.is(stub.props.pass, 'through');
+    t.doesNotThrow(() => TestUtils.findRenderedComponentWithType(container, WrappedContainer));
+    const decorated = TestUtils.findRenderedComponentWithType(container, WrappedContainer);
+    t.false(decorated.hasSubscriptions());
+  }
+
+  runCheck();
+  runCheck(null, null, null);
+  runCheck(false, false, false);
+
+  t.end();
+});
