@@ -254,6 +254,10 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
         return true;
       }
 
+      hasSubscriptions() {
+        return Object.keys(mappedSubscriptions).length > 0;
+      }
+
       render() {
         const { pubSub } = this;
         const ref = withRef ? 'wrappedInstance' : null;
