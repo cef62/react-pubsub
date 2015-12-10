@@ -39,7 +39,7 @@ ProviderMock.propTypes = {
 };
 
 test('should add the PubSub core to the child context', t => {
-  const pubSubCore = { register() {}, unregister() {} };
+  const pubSubCore = createPubSub();
 
   class Container extends Component {
     render() {
@@ -61,7 +61,7 @@ test('should add the PubSub core to the child context', t => {
 });
 
 test('should pass props to the given component', t => {
-  const pubSubCore = { register() {}, unregister() {} };
+  const pubSubCore = createPubSub();
 
   class Container extends Component {
     render() {
@@ -177,7 +177,7 @@ test('should hoist non-react statics from wrapped component', t => {
 });
 
 test('should use the pubSub core from the props instead of from the context if present', t => {
-  const pubSubCore = { register() {}, unregister() {} };
+  const pubSubCore = createPubSub();
   class Container extends Component {
     render() {
       return (<Passthrough />);
@@ -209,7 +209,7 @@ test('should throw an error if the pubSub core is not in the props or context', 
 
 
 test('should return the instance of the wrapped component for use in calling child methods', t => {
-  const pubSubCore = { register() {}, unregister() {} };
+  const pubSubCore = createPubSub();
   const someData = { some: 'data' };
 
   class Container extends Component {
@@ -221,7 +221,7 @@ test('should return the instance of the wrapped component for use in calling chi
       return (<Passthrough />);
     }
   }
-  const WrappedComponent = createPubSubConnector(null, { withRef: true })(Container);
+  const WrappedComponent = createPubSubConnector(null, null, { withRef: true })(Container);
 
   const tree = TestUtils.renderIntoDocument(
     <ProviderMock pubSubCore={pubSubCore}>
@@ -408,3 +408,54 @@ test(
     t.end();
   }
 );
+
+// test('should not invoke mapPublish when props change if it only has one argument', t => {
+//   const pubSubCore = createPubSub();
+//
+//   let invocationCount = 0;
+//
+//   const mapPublish = () => {
+//     invocationCount++;
+//     return {};
+//   };
+//
+//   class WithoutProps extends Component {
+//     render() {
+//       return (<Passthrough {...this.props}/>);
+//     }
+//   }
+//   const WrappedContainer = createPubSubConnector(null, mapPublish)(WithoutProps);
+//
+//   class OuterComponent extends Component {
+//     constructor() {
+//       super();
+//       this.state = { foo: 'FOO' };
+//     }
+//
+//     setFoo(foo) {
+//       this.setState({ foo });
+//     }
+//
+//     render() {
+//       return (
+//         <div>
+//         <WrappedContainer {...this.state} />
+//         </div>
+//       );
+//     }
+//   }
+//
+//   let outerComponent;
+//   TestUtils.renderIntoDocument(
+//     <ProviderMock pubSubCore={pubSubCore}>
+//     <OuterComponent ref={c => outerComponent = c} />
+//     </ProviderMock>
+//   );
+//
+//   outerComponent.setFoo('BAR');
+//   outerComponent.setFoo('DID');
+//
+//   t.is(invocationCount, 1);
+//
+//   t.end();
+// });
