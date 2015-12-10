@@ -219,14 +219,14 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
         if (!withRef) {
           throw new Error(
             `To access the wrapped instance, you need to specify explicitly`
-            + `{ withRef: true } in the options passed to the createPubSubConnector() call.`
+            + ` { withRef: true } in the options passed to the createPubSubConnector() call.`
           );
         }
         return this.refs.wrappedInstance;
       }
 
       updateSingleMappedSubscription(updatedSubscription, silent = false) {
-        if (!silent) {
+        if (!silent && updatedSubscription) {
           Object.assign(this.mappedSubscriptionProps, updatedSubscription);
           cleanEmptyKeys(this.mappedSubscriptionProps);
           const lastSubscription = this.state.lastSubscription ? this.state.lastSubscription + 1 : 1;
