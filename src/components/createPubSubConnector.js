@@ -33,7 +33,7 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
     wrapPublishMethods(mapPublishToProps) :
     mapPublishToProps || defaultMapPublishToProps;
   const shouldUpdatePublishProps = finalMapPublishToProps.length > 1;
-  const { withRef = false } = options;
+  const { withRef = false } = options || {};
 
   let mappedSubscriptions = {};
   function registerMappedSubscriptions(pubSub, subscriptionsMap = {}, updateSubscriptionProps, getProps) {
