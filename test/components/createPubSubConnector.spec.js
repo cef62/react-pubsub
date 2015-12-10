@@ -5,7 +5,7 @@
  */
 import test from 'ava';
 import sinon from 'sinon';
-import React, { PropTypes, Component, Children } from 'react';
+import React, { PropTypes, Component, Children, createClass } from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-addons-test-utils';
 import 'babel-core/register';
@@ -352,8 +352,8 @@ test(
 );
 
 test(
-  'should update mapped subscriptions defined in `mapSubscriptionsToProps` when'
-  + ' props changes only if the callback defines a second arguments in its signature',
+  'should update subscriptions from `mapSubscriptionsToProps` when props changes only'
+  + ' if the callback defines a second arguments',
   t => {
     const SIMPLE_UPDATE = 'simpleUpdate';
     const pubSubCore = createPubSub();
@@ -552,6 +552,103 @@ test('should pass publish and avoid subscription if arguments are falsy', t => {
   runCheck();
   runCheck(null, null, null);
   runCheck(false, false, false);
+
+  t.end();
+});
+
+test('should set the displayName correctly', t => {
+  class Foo extends Component {
+    render() {
+      return (<div />);
+    }
+  }
+  t.is(createPubSubConnector()(Foo).displayName, 'PubSubConnector(Foo)');
+
+  const Bar = createClass({
+    displayName: 'Bar',
+    render() {
+      return (<div />);
+    },
+  });
+  t.is(createPubSubConnector()(Bar).displayName, 'PubSubConnector(Bar)');
+
+  const Comp = createClass({
+    render() {
+      return (<div />);
+    },
+  });
+  t.is(createPubSubConnector()(Comp).displayName, 'PubSubConnector(Component)');
+
+  t.end();
+});
+
+test('should expose the wrapped component as WrappedComponent', t => {
+  class Container extends Component {
+    render() {
+      return (<Passthrough />);
+    }
+  }
+  const decorated = createPubSubConnector()(Container);
+
+  t.is(decorated.WrappedComponent, Container);
+  t.end();
+});
+
+test('should throw when trying to access the wrapped instance if withRef is not specified', t => {
+  const pubSubCore = createPubSub();
+
+  class Container extends Component {
+    render() {
+      return (<Passthrough />);
+    }
+  }
+
+  const Decorated = createPubSubConnector()(Container);
+
+  const tree = TestUtils.renderIntoDocument(
+    <ProviderMock pubSubCore={pubSubCore}>
+    <Decorated />
+    </ProviderMock>
+  );
+
+  const decorated = TestUtils.findRenderedComponentWithType(tree, Decorated);
+  t.throws(
+    () => decorated.getWrappedInstance(),
+    /To access the wrapped instance, you need to specify explicitly \{ withRef: true \} in the options passed to the createPubSubConnector\(\) call\./
+  );
+
+  t.end();
+});
+
+test('should return the instance of the wrapped component for use in calling child methods', t => {
+  const pubSubCore = createPubSub();
+
+  const someData = { some: 'data' };
+
+  class Container extends Component {
+    someInstanceMethod() {
+      return someData;
+    }
+
+    render() {
+      return (<Passthrough />);
+    }
+  }
+
+  const decorator = createPubSubConnector(null, null, { withRef: true });
+  const Decorated = decorator(Container);
+
+  const tree = TestUtils.renderIntoDocument(
+    <ProviderMock pubSubCore={pubSubCore}>
+    <Decorated />
+    </ProviderMock>
+  );
+
+  const decorated = TestUtils.findRenderedComponentWithType(tree, Decorated);
+
+  t.throws(() => decorated.someInstanceMethod());
+  t.is(decorated.getWrappedInstance().someInstanceMethod(), someData);
+  t.is(decorated.refs.wrappedInstance.someInstanceMethod(), someData);
 
   t.end();
 });
