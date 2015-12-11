@@ -9,7 +9,8 @@ React-PubSub enable support to any compliant PubSub libray via `custom adapters`
 
 The library is just 5kB, has no dependencies and comes with an internal PubSub implementation.
 
-[![build status](https://img.shields.io/travis/cef62/react-pubsub/master.svg?style=flat-square)](https://travis-ci.org/cef62/react-pubsub) [![npm version](https://img.shields.io/npm/v/react-pubsub.svg?style=flat-square)](https://www.npmjs.com/package/react-pubsub) [![npm downloads](https://img.shields.io/npm/dm/react-pubsub.svg?style=flat-square)](https://www.npmjs.com/package/react-pubsub)
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+[![build status](https://img.shields.io/travis/cef62/react-pubsub/master.svg?style=flat-square)](https://travis-ci.org/cef62/react-pubsub) [![npm version](https://img.shields.io/npm/v/react-pubsub.svg?style=flat-square)](https://www.npmjs.com/package/react-pubsub) [![npm downloads](https://img.shields.io/npm/dm/react-pubsub.svg?style=flat-square)](https://www.npmjs.com/package/react-pubsub) [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 # Installation
 
