@@ -1,6 +1,5 @@
 {
   "name": "react-pubsub",
-  "version": "0.3.0",
   "description": "PubSub abstraction layer for React, should support any compliant pub-sub libray.",
   "main": "lib/index.js",
   "scripts": {
@@ -10,7 +9,9 @@
     "lint": "./node_modules/.bin/eslint src test examples",
     "prepublish": "npm run lint && npm run clean && npm run build && npm run build:umd",
     "test": "node_modules/.bin/ava test/**",
-    "test:watch": "watch 'npm run test'"
+    "test:watch": "watch 'npm run test'",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
+    "commit": "git cz"
   },
   "repository": {
     "type": "git",
@@ -36,15 +37,19 @@
     "babel-core": "5.8.34",
     "babel-eslint": "4.1.6",
     "babel-loader": "5.4.0",
+    "cz-conventional-changelog": "1.1.5",
     "eslint": "1.10.2",
     "eslint-config-airbnb": "1.0.2",
     "eslint-plugin-react": "3.10.0",
+    "ghooks": "1.0.1",
     "jsdom": "7.1.1",
     "react": "0.14.3",
     "react-addons-test-utils": "0.14.3",
     "react-dom": "0.14.3",
     "rimraf": "2.4.4",
+    "semantic-release": "^4.3.5",
     "sinon": "1.17.2",
+    "validate-commit-msg": "1.0.0",
     "watch": "0.16.0",
     "webpack": "1.12.9"
   },
@@ -62,5 +67,14 @@
         "*.js"
       ]
     }
-  ]
+  ],
+  "config": {
+    "ghooks": {
+      "pre-commit": "npm run lint && npm t",
+      "commit-msg": "validate-commit-msg"
+    },
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
 }
