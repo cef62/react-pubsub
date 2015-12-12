@@ -1,6 +1,5 @@
 /*
- * Created by Dan Abramov
- * copied from React Redux repository to avoid unnecessary depenendencies
+ * based on React Redux repository to avoid unnecessary depenendencies
  * https://github.com/rackt/react-redux/blob/master/src/utils/isPlainObject.js
  *
  */
@@ -18,10 +17,6 @@ export default function isPlainObject(obj) {
   const proto = typeof obj.constructor === 'function' ?
     Object.getPrototypeOf(obj) :
     Object.prototype;
-
-  if (proto === null) {
-    return true;
-  }
 
   const constructor = proto.constructor;
 
