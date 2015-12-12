@@ -1,5 +1,5 @@
 import { Component, PropTypes, Children } from 'react';
-import pubSubShape from '../utils/pubSubShape';
+import pubSubShape from '../shapes/pubSubShape';
 
 let didWarnAboutCoreChanged = false;
 const warnOfCoreChanges = () => {

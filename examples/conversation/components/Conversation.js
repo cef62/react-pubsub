@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { TALK } from '../utils/constants';
 import { createPubSubConnector } from 'react-pubsub';
-import subscriptionShape from 'react-pubsub/utils/subscriptionShape';
+import subscriptionShape from 'react-pubsub/shapes/subscriptionShape';
 
 class Conversation extends Component {
   constructor(props, context) {

@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { TALK } from '../utils/constants';
-import pubSubShape from 'react-pubsub/utils/pubSubShape';
+import pubSubShape from 'react-pubsub/shapes/pubSubShape';
 
 export default class User extends Component {
   constructor(props, context) {

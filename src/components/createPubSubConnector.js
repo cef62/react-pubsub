@@ -2,7 +2,7 @@ import { Component, createElement } from 'react';
 import hoistStatics from 'hoist-non-react-statics';
 import isPlainObject from '../utils/isPlainObject';
 import shallowEqual from '../utils/shallowEqual';
-import pubSubShape from '../utils/pubSubShape';
+import pubSubShape from '../shapes/pubSubShape';
 
 const defaultRetriveProps = () => ({});
 const defaultMapPublishToProps = publish => ({ publish });
