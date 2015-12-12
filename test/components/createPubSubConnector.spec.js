@@ -12,6 +12,7 @@ import 'babel-core/register';
 import initJsDom from '../helpers/_document';
 import createPubSubConnector from '../../src/components/createPubSubConnector';
 import createPubSub from '../../src/adapter/createPubSub';
+import subscriptionShape from '../../src/shapes/subscriptionShape';
 
 initJsDom();
 
@@ -123,6 +124,31 @@ test('should pass pubSub subscriptions as props to the given component', t => {
   t.true(subscription.publish.calledOnce);
   t.true(subscription.publish.calledWith('test_action', action));
   t.true(subscription.removeAll.calledOnce);
+
+  t.end();
+});
+
+test('should pass pubSub subscription with a valid shape', t => {
+  const pubSubCore = createPubSub();
+
+  class Container extends Component {
+    render() {
+      return (<Passthrough {...this.props} />);
+    }
+  }
+  Container.propTypes = {
+    pubSub: subscriptionShape.isRequired,
+  };
+  const WrapperContainer = createPubSubConnector()(Container);
+
+  const spy = sinon.spy(console, 'error');
+  TestUtils.renderIntoDocument(
+    <ProviderMock pubSubCore={pubSubCore}>
+    <WrapperContainer />
+    </ProviderMock>
+  );
+  console.error.restore();
+  t.is(spy.callCount, 0);
 
   t.end();
 });
