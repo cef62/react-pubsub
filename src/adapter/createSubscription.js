@@ -1,12 +1,11 @@
 /*
    Creates the subscription object
 
-   @param component function the React component
    @param autoUnmount boolean defaults to true, if it has to remove all subscriptions on cwunmount
    @param adapter object the pubsub adapter
    @return the subscription object
    */
-const createSubscription = (component, adapter, unsubscribe) => {
+const createSubscription = (adapter, unsubscribe) => {
   const sub = {
     unsubscribe,
     subscriptions: [],

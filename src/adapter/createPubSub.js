@@ -17,7 +17,7 @@ const createPubSub = (subscribersMap = {}, adapter = createDefaultAdapter()) => 
     register(component) {
       if (!subscribersMap[component]) {
         const unsubscribe = () => api.unregister(component);
-        subscribersMap[component] = createSubscription(component, adapterAPI, unsubscribe);
+        subscribersMap[component] = createSubscription(adapterAPI, unsubscribe);
       }
       return subscribersMap[component];
     },
