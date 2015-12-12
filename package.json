@@ -8,10 +8,13 @@
     "build:umd": "webpack src/index.js dist/react-pubsub.js && NODE_ENV=production webpack src/index.js dist/react-pubsub.min.js",
     "lint": "./node_modules/.bin/eslint src test examples",
     "prepublish": "npm run lint && npm run clean && npm run build && npm run build:umd",
-    "test": "node_modules/.bin/ava test/**",
+    "test": "node_modules/.bin/nyc node_modules/.bin/ava test/**",
     "test:watch": "watch 'npm run test'",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post",
-    "commit": "git cz"
+    "commit": "git cz",
+
+    "coverage": "nyc report",
+    "coverage:upload": "npm run coverage -- --reporter=lcovonly && coveralls < coverage/lcov.info"
   },
   "repository": {
     "type": "git",
@@ -37,12 +40,14 @@
     "babel-core": "5.8.34",
     "babel-eslint": "4.1.6",
     "babel-loader": "5.4.0",
+    "coveralls": "2.11.6",
     "cz-conventional-changelog": "1.1.5",
     "eslint": "1.10.2",
     "eslint-config-airbnb": "1.0.2",
     "eslint-plugin-react": "3.10.0",
     "ghooks": "1.0.1",
     "jsdom": "7.1.1",
+    "nyc": "5.0.0",
     "react": "0.14.3",
     "react-addons-test-utils": "0.14.3",
     "react-dom": "0.14.3",
@@ -75,6 +80,17 @@
     },
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
+    },
+    "nyc": {
+      "exclude": [
+        "test",
+        "coverage",
+        "test{,-*}.js",
+        "node_modules",
+        "lib",
+        "dist",
+        "examples"
+      ]
     }
   }
 }
