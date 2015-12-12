@@ -26,7 +26,7 @@ const createPubSub = (subscribersMap = {}, adapter = createDefaultAdapter()) => 
         subscribersMap[component].removeAll();
         delete subscribersMap[component];
       } else {
-        console.log(`${component.displayName} is NOT registerd to PubSub`); // eslint-disable-line no-console
+        console.error(`${component.displayName} is NOT registerd to PubSub`); // eslint-disable-line no-console
       }
     },
   };
