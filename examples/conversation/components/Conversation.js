@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import { TALK } from '../utils/constants';
 import { createPubSubConnector } from 'react-pubsub';
 import subscriptionShape from 'react-pubsub/utils/subscriptionShape';
@@ -6,20 +6,15 @@ import subscriptionShape from 'react-pubsub/utils/subscriptionShape';
 class Conversation extends Component {
   constructor(props, context) {
     super(props, context);
-    this.state = {};
+    this.conversation = '';
   }
 
-  componentDidMount() {
-    const { pubSub: { add } } = this.props;
-    add(TALK, ({ msg, owner }) => {
-      const { conversation: oldConversation = '' } = this.state;
-      const conversation = `${oldConversation}\n[${owner}]: ${msg}`;
-      this.setState({ conversation });
-    });
+  componentWillUpdate({ lastMessage = '' }) {
+    this.conversation = `${this.conversation}\n${lastMessage}`;
   }
 
   render() {
-    const { conversation } = this.state;
+    const { conversation } = this;
     return (
       <div>
         <textarea rows="20" cols="50" value={conversation} />
@@ -30,6 +25,13 @@ class Conversation extends Component {
 
 Conversation.propTypes = {
   pubSub: subscriptionShape.isRequired,
+  lastMessage: PropTypes.string,
 };
 
-export default createPubSubConnector()(Conversation);
+const subscriptionsToPros = {
+  [TALK]: ([{ msg, owner }]) => {
+    return { lastMessage: `[${owner}]: ${msg}` };
+  },
+};
+
+export default createPubSubConnector(subscriptionsToPros)(Conversation);
