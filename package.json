@@ -9,10 +9,9 @@
     "lint": "./node_modules/.bin/eslint src test examples",
     "prepublish": "npm run lint && npm run clean && npm run build && npm run build:umd",
     "test": "node_modules/.bin/nyc node_modules/.bin/ava test/**",
-    "test:watch": "watch 'npm run test'",
+    "test:watch": "watch 'npm run test' test",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post",
     "commit": "git cz",
-
     "coverage": "nyc report",
     "coverage:upload": "npm run coverage -- --reporter=lcovonly && coveralls < coverage/lcov.info"
   },
