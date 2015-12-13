@@ -15,6 +15,9 @@ const createPubSub = (subscribersMap = {}, adapter = createDefaultAdapter()) => 
   const adapterAPI = createPubSubAdapter(adapter);
   const api = {
     register(component) {
+      if (!component) {
+        throw new Error(`'createPubSub.register()' expected a component instead received: ${component}`);
+      }
       if (!subscribersMap[component]) {
         const unsubscribe = () => api.unregister(component);
         subscribersMap[component] = createSubscription(adapterAPI, unsubscribe);
@@ -22,6 +25,9 @@ const createPubSub = (subscribersMap = {}, adapter = createDefaultAdapter()) => 
       return subscribersMap[component];
     },
     unregister(component) {
+      if (!component) {
+        throw new Error(`'createPubSub.unregister()' expected a component instead received: ${component}`);
+      }
       if (subscribersMap[component]) {
         subscribersMap[component].removeAll();
         delete subscribersMap[component];
