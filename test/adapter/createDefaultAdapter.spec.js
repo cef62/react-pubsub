@@ -1,7 +1,10 @@
 import test from 'ava';
 import sinon from 'sinon';
 import 'babel-core/register';
+import consoleMock from '../helpers/_consoleMock';
 import createDefaultAdapter from '../../src/adapter/createDefaultAdapter';
+
+const log = consoleMock(); // eslint-disable-line no-unused-vars
 
 test('should return an object with a valid adapter interface', t => {
   const adapter = createDefaultAdapter();
@@ -172,13 +175,9 @@ test('.unsubscribe() should throws if `token` doesn\'t validate', t => {
 test('.unsubscribe() should print an error if `token` is not bind to a subscription', t => {
   const { unsubscribe } = createDefaultAdapter();
 
-  const error = console.error; // eslint-disable-line no-console
-  console.error = () => {}; // eslint-disable-line no-console
-
   const spy = sinon.spy(console, 'error');
   unsubscribe(['test', () => {}]);
   console.error.restore(); // eslint-disable-line no-console
-  console.error = error; // eslint-disable-line no-console
 
   t.is(spy.callCount, 1);
   t.true(spy.calledWith(`You're unsubscribing an unrecognized token test,function () {}`));
@@ -281,13 +280,9 @@ test('.publish() should not throw if `params` is missing', t => {
 test('.publish() should notify if `action` has no listener', t => {
   const { publish } = createDefaultAdapter();
 
-  const info = console.info; // eslint-disable-line no-console
-  console.info = () => {}; // eslint-disable-line no-console
-
   const spy = sinon.spy(console, 'info');
   publish('myTest');
   console.info.restore(); // eslint-disable-line no-console
-  console.info = info; // eslint-disable-line no-console
 
   t.is(spy.callCount, 1);
   t.true(spy.calledWith(`The action 'myTest' being published has no listeners`));

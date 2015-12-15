@@ -1,7 +1,10 @@
 import test from 'ava';
 import sinon from 'sinon';
 import 'babel-core/register';
+import consoleMock from '../helpers/_consoleMock';
 import createPubSub from '../../src/adapter/createPubSub';
+
+const log = consoleMock(); // eslint-disable-line no-unused-vars
 
 test('should return an object with a valid pubSubCore interface', t => {
   const pubSubCore = createPubSub();
@@ -106,14 +109,10 @@ test('.unregister() should print an error when receive a component not registere
   const pubSubCore = createPubSub();
   pubSubCore.register('test');
 
-  const error = console.error; // eslint-disable-line no-console
-  console.error = () => {}; // eslint-disable-line no-console
-
   const spy = sinon.spy(console, 'error');
   pubSubCore.unregister('otherTest');
   console.error.restore(); // eslint-disable-line no-console
   t.is(spy.callCount, 1);
-  console.error = error; // eslint-disable-line no-console
 
   t.end();
 });

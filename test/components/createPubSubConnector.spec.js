@@ -9,11 +9,13 @@ import React, { PropTypes, Component, Children, createClass } from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-addons-test-utils';
 import 'babel-core/register';
+import consoleMock from '../helpers/_consoleMock';
 import initJsDom from '../helpers/_document';
 import createPubSubConnector from '../../src/components/createPubSubConnector';
 import createPubSub from '../../src/adapter/createPubSub';
 import subscriptionShape from '../../src/shapes/subscriptionShape';
 
+const log = consoleMock(); // eslint-disable-line no-unused-vars
 initJsDom();
 
 class Passthrough extends Component {

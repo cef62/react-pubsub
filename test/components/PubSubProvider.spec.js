@@ -8,9 +8,11 @@ import sinon from 'sinon';
 import React, { PropTypes, Component } from 'react';
 import TestUtils from 'react-addons-test-utils';
 import 'babel-core/register';
+import consoleMock from '../helpers/_consoleMock';
 import initJsDom from '../helpers/_document';
 import PubSubProvider from '../../src/components/PubSubProvider';
 
+const log = consoleMock(); // eslint-disable-line no-unused-vars
 initJsDom();
 
 class Child extends Component {
@@ -95,10 +97,6 @@ test('should warn only once when receiving a new PubSubCore in props', t => {
   const child = TestUtils.findRenderedComponentWithType(container, Child);
   t.is(child.context.pubSubCore.unregister(), 15);
 
-  // mock console.error to avoid it to print on test output
-  const tmp = console.error;
-  console.error = () => {};
-
   let spy = sinon.spy(console, 'error');
   container.setState({ pubSubCore: pubSubCore2 });
   console.error.restore();
@@ -114,6 +112,5 @@ test('should warn only once when receiving a new PubSubCore in props', t => {
   t.is(child.context.pubSubCore.unregister(), 15);
   t.is(spy.callCount, 0);
 
-  console.error = tmp;
   t.end();
 });
