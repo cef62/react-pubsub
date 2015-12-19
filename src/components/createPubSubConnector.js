@@ -32,7 +32,7 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
     wrapPublishMethods(mapPublishToProps) :
     mapPublishToProps || defaultMapPublishToProps;
   const shouldUpdatePublishProps = finalMapPublishToProps.length > 1;
-  const { withRef = false } = options || {};
+  const { withRef = false, ownProps = true } = options || {};
 
   let mappedSubscriptions = {};
   function registerMappedSubscriptions(pubSub, subscriptionsMap = {}, updateSubscriptionProps, getProps) {
@@ -63,7 +63,9 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
       if (typeof transformerOrAlias === 'function') {
         callback = (...args) => {
           // transform values
-          const newValues = transformerOrAlias(...args, getProps());
+          const newValues = ownProps ?
+            transformerOrAlias(...args, getProps())
+            : transformerOrAlias(...args);
 
           if (!isPlainObject(newValues)) {
             throw new Error(

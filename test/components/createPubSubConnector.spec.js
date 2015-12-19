@@ -688,3 +688,48 @@ test('should return the instance of the wrapped component for use in calling chi
 
   t.end();
 });
+
+test(
+  'should not pass component props to action callback if option `ownProps`'
+  + ' is set to false',
+  t => {
+    const SIMPLE_UPDATE = 'simpleUpdate';
+    const pubSubCore = createPubSub();
+    const register = pubSubCore.register;
+    let pubSub;
+    pubSubCore.register = (...args) => {
+      pubSub = register(...args);
+      return pubSub;
+    };
+
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+
+    const mapSubscriptionsToProps = {
+      [SIMPLE_UPDATE]: (country, ...rest) => {
+        return { country, other: rest };
+      },
+    };
+    const WrapperContainer = createPubSubConnector(
+      mapSubscriptionsToProps,
+      null,
+      { ownProps: false }
+    )(Container);
+
+    const tree = TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+      <WrapperContainer name="john" color="red" />
+      </ProviderMock>
+    );
+    const stub = TestUtils.findRenderedComponentWithType(tree, Passthrough);
+
+    pubSub.publish(SIMPLE_UPDATE, 'Italy');
+    t.is(stub.props.country, 'Italy');
+    t.notOk(stub.props.other.length);
+
+    t.end();
+  }
+);
