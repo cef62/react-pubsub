@@ -39,13 +39,9 @@ const createDefaultAdapter = () => {
       }
     },
 
-    publish(action, params) {
+    publish(action, ...params) {
       if (!action || typeof action !== 'string') {
         throw new Error(`Default adapter '.publish()' expected an action (string) as first argument instead received: ${action}`);
-      }
-
-      if (params && !Array.isArray(params)) {
-        throw new Error(`Default adapter '.publish()' expected the second argument to be null or an array instead received: ${params}`);
       }
 
       if (!hOP.call(actions, action)) {
@@ -53,7 +49,7 @@ const createDefaultAdapter = () => {
         return;
       }
 
-      actions[action].forEach((cb) => cb.apply(undefined, params));
+      actions[action].forEach((cb) => cb(...params));
     },
   };
 };

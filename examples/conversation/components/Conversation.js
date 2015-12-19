@@ -29,7 +29,7 @@ Conversation.propTypes = {
 };
 
 const subscriptionsToPros = {
-  [TALK]: ([{ msg, owner }]) => {
+  [TALK]: ({ msg, owner }) => {
     return { lastMessage: `[${owner}]: ${msg}` };
   },
 };

@@ -198,21 +198,6 @@ test('.removeAll() should unsubscribe all tokens registered via .add()', t => {
   t.end();
 });
 
-test('.publish() should throws if invoked with less than 2 arguments', t => {
-  const adapter = {
-    subscribe() {},
-    publish() {},
-  };
-  const api = createSubscription(adapter, () => {});
-
-  t.throws(() => api.publish());
-  t.throws(() => api.publish('test'));
-  t.doesNotThrow(() => api.publish('test', {}));
-  t.doesNotThrow(() => api.publish('test', {}, 'extra'));
-
-  t.end();
-});
-
 test('.publish() should throws if the action received is not a string', t => {
   const adapter = {
     subscribe() {},
@@ -254,7 +239,7 @@ test('.publish() should pass the received action type to the invoked .publish() 
   t.end();
 });
 
-test('.publish() should pass the received arguments, but the action, as array to the invoked .publish() on the adapter', t => {
+test('.publish() should pass the received arguments to the invoked .publish() on the adapter', t => {
   const adapter = {
     subscribe() {},
     publish: sinon.spy(),
@@ -264,8 +249,8 @@ test('.publish() should pass the received arguments, but the action, as array to
   const param2 = 55;
   api.publish('test', param1, param2);
 
-  t.true(Array.isArray(adapter.publish.lastCall.args[1]));
-  t.is(adapter.publish.lastCall.args[1][0], param1);
-  t.is(adapter.publish.lastCall.args[1][1], param2);
+  t.is(adapter.publish.lastCall.args[0], 'test');
+  t.is(adapter.publish.lastCall.args[1], param1);
+  t.is(adapter.publish.lastCall.args[2], param2);
   t.end();
 });

@@ -17,6 +17,7 @@ const createSubscription = (adapter, unsubscribe) => {
   const sub = {
     unsubscribe,
     subscriptions: [],
+
     add(action, cb) {
       if (!action || typeof action !== 'string') {
         throw new Error(`Subscription '.add()' expected an action (string) as first argument instead received: ${action}`);
@@ -37,20 +38,18 @@ const createSubscription = (adapter, unsubscribe) => {
         adapter.unsubscribe(token);
       };
     },
+
     removeAll() {
       sub.subscriptions.forEach(token => adapter.unsubscribe(token));
       sub.subscriptions = [];
     },
+
     publish(action, ...params) {
       if (!action || typeof action !== 'string') {
         throw new Error(`Subscription '.publish()' expected an action (string) as first argument instead received: ${action}`);
       }
 
-      if (!params.length) {
-        throw new Error(`Subscription '.publish()' expected at least 2 arguments, instead received 1`);
-      }
-
-      adapter.publish(action, params);
+      adapter.publish(action, ...params);
     },
   };
 

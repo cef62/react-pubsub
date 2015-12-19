@@ -70,7 +70,7 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
           mappedSubscriptions[key].shouldUpdateSubscriptionProps = shouldUpdateSubscriptionProps;
 
           // transform values
-          const newValues = transformerOrAlias(args, retrieveProps());
+          const newValues = transformerOrAlias(...args, retrieveProps());
 
           if (!isPlainObject(newValues)) {
             throw new Error(

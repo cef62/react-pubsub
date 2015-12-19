@@ -190,11 +190,11 @@ test('.unsubscribe() should unsubscribe given `token`', t => {
   const callback = sinon.spy();
   const token = subscribe('yoooo', callback);
 
-  publish('yoooo', ['some data']);
+  publish('yoooo', 'some data');
   t.true(callback.called);
   t.true(callback.calledWith('some data'));
   unsubscribe(token);
-  publish('yoooo', ['some data']);
+  publish('yoooo', 'some data');
   t.true(callback.calledOnce);
 
   t.end();
@@ -247,25 +247,13 @@ test('.publish() should throws if `action` is not a string', t => {
   t.end();
 });
 
-test('.publish() should throws if `params` is defined and is not an array', t => {
+test('.publish() should accept any number of parameters', t => {
   const { publish } = createDefaultAdapter();
 
-  t.throws(
-    () => publish('test', 33),
-    /Default adapter '\.publish\(\)' expected the second argument to be null or an array instead received:/
-  );
-  t.throws(
-    () => publish('test', true),
-    /Default adapter '\.publish\(\)' expected the second argument to be null or an array instead received:/
-  );
-  t.throws(
-    () => publish('test', 'test'),
-    /Default adapter '\.publish\(\)' expected the second argument to be null or an array instead received:/
-  );
-  t.throws(
-    () => publish('test', {}),
-    /Default adapter '\.publish\(\)' expected the second argument to be null or an array instead received:/
-  );
+  t.doesNotThrow(() => publish('test'));
+  t.doesNotThrow(() => publish('test', 33, 44));
+  t.doesNotThrow(() => publish('test', true, 44, 'a'));
+  t.doesNotThrow(() => publish('test', {}));
   t.doesNotThrow(() => publish('test', []));
 
   t.end();
@@ -299,7 +287,7 @@ test('.publish() should invoke subscribed listeners for received `action`', t =>
   subscribe('test', callback2);
   subscribe('test', callback3);
 
-  publish('test', ['some data']);
+  publish('test', 'some data');
 
   t.true(callback1.called);
   t.true(callback2.called);

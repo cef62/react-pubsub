@@ -341,8 +341,7 @@ test(
 
     const mapSubscriptionsToProps = {
       [SPEAK]: 'lastMessage',
-      [UPDATE]: (args, props) => {
-        const [payload = {}] = args;
+      [UPDATE]: (payload = {}, props) => {
         const { updateField: key } = props;
         return { updatedField: payload[key] };
       },
@@ -411,8 +410,7 @@ test(
     }
 
     const mapSubscriptionsToProps = {
-      [SIMPLE_UPDATE]: (args) => {
-        const [payload = {}] = args;
+      [SIMPLE_UPDATE]: (payload = {}) => {
         const now = new Date().getTime();
         return { simpleField: payload.name, now };
       },
