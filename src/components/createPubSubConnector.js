@@ -4,7 +4,6 @@ import isPlainObject from '../utils/isPlainObject';
 import shallowEqual from '../utils/shallowEqual';
 import pubSubShape from '../shapes/pubSubShape';
 
-const defaultRetriveProps = () => ({});
 const defaultMapPublishToProps = publish => ({ publish });
 
 function getDisplayName(WrappedComponent) {
@@ -62,15 +61,9 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
     const updateMappedSubscriptions = (key, transformerOrAlias) => {
       let callback;
       if (typeof transformerOrAlias === 'function') {
-        const shouldUpdateSubscriptionProps = transformerOrAlias.length > 1;
-        callback = (retrieveProps = defaultRetriveProps, silent = false) =>
-        (...args) => {
-          // store received values
-          mappedSubscriptions[key].lastResult = args;
-          mappedSubscriptions[key].shouldUpdateSubscriptionProps = shouldUpdateSubscriptionProps;
-
+        callback = (...args) => {
           // transform values
-          const newValues = transformerOrAlias(...args, retrieveProps());
+          const newValues = transformerOrAlias(...args, getProps());
 
           if (!isPlainObject(newValues)) {
             throw new Error(
@@ -86,8 +79,7 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
             );
           }
 
-          updateSubscriptionProps(newValues, silent);
-          return newValues;
+          updateSubscriptionProps(newValues);
         };
       } else {
         callback = result => updateSubscriptionProps({ [transformerOrAlias]: result });
@@ -98,45 +90,8 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
 
     mappedSubscriptions = Object.keys(subscriptionsMap)
     .reduce((acc, key) => {
-      const refresh = updateMappedSubscriptions(key, subscriptionsMap[key]);
-      let callback = refresh;
-      if (typeof subscriptionsMap[key] === 'function') {
-        callback = refresh(getProps);
-      }
-      acc[key] = {
-        key,
-        refresh,
-        unsubscribe: add(key, callback),
-      };
-      return acc;
-    }, {});
-  }
-
-  function refreshMappedSubscriptions(subscriptionsMap = {}, getProps) {
-    const mappedSubscriptionsKeys = Object.keys(mappedSubscriptions);
-    if (!mappedSubscriptionsKeys.length) {
-      return {};
-    }
-
-    const silent = true;
-
-    return Object.keys(subscriptionsMap)
-    .reduce((acc, key) => {
-      if (
-        typeof subscriptionsMap[key] === 'function'
-          && mappedSubscriptions[key] !== undefined
-      ) {
-        const {
-          refresh,
-          lastResult,
-          shouldUpdateSubscriptionProps,
-        } = mappedSubscriptions[key];
-
-        if (shouldUpdateSubscriptionProps) {
-          const res = refresh(getProps, silent)(...lastResult);
-          Object.assign(acc, res);
-        }
-      }
+      const callback = updateMappedSubscriptions(key, subscriptionsMap[key]);
+      acc[key] = add(key, callback);
       return acc;
     }, {});
   }
@@ -156,14 +111,9 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
     return publishProps;
   }
 
-  function computeMappedSubscriptionProps(mappedSubscriptionProps = {}, props = {}) {
-    const nextSubscriptionsProps = refreshMappedSubscriptions(mapSubscriptionsToProps, () => props);
-    const merged = Object.assign({}, mappedSubscriptionProps, nextSubscriptionsProps);
-    return cleanEmptyKeys(merged);
-  }
-
   return function wrapComponent(Composed) {
     class PubSubConnector extends Component {
+
       constructor(props, context) {
         super(props, context);
         this.pubSubCore = props.pubSubCore || context.pubSubCore;
@@ -189,7 +139,8 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
         }
 
         this.publishProps = computePublishProps(this.pubSub, props);
-        this.mappedSubscriptionProps = computeMappedSubscriptionProps({}, props);
+        this.mappedSubscriptionProps = {};
+
         this.state = {};
       }
 
@@ -197,17 +148,12 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
         const stateChanged = !shallowEqual(nextState, this.state);
         const propsChanged = !shallowEqual(nextProps, this.props);
         let publishPropsChanged = false;
-        let mappedSubscriptionsPropsChanged = false;
 
         if (propsChanged && shouldUpdatePublishProps) {
           publishPropsChanged = this.updatePublishProps(nextProps);
         }
 
-        if (propsChanged && shouldMapSubscriptions) {
-          mappedSubscriptionsPropsChanged = this.updateMappedSubscriptions(nextProps);
-        }
-
-        return propsChanged || stateChanged || publishPropsChanged || mappedSubscriptionsPropsChanged;
+        return propsChanged || stateChanged || publishPropsChanged;
       }
 
       componentWillUnmount() {
@@ -225,23 +171,13 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
         return this.refs.wrappedInstance;
       }
 
-      updateSingleMappedSubscription(updatedSubscription, silent = false) {
-        if (!silent && updatedSubscription) {
+      updateSingleMappedSubscription(updatedSubscription) {
+        if (updatedSubscription) {
           Object.assign(this.mappedSubscriptionProps, updatedSubscription);
           cleanEmptyKeys(this.mappedSubscriptionProps);
           const lastSubscription = this.state.lastSubscription ? this.state.lastSubscription + 1 : 1;
           this.setState({ lastSubscription });
         }
-      }
-
-      updateMappedSubscriptions(props = this.props) {
-        const nextSubscriptionProps = computeMappedSubscriptionProps(this.mappedSubscriptionProps, props);
-        if (shallowEqual(nextSubscriptionProps, this.mappedSubscriptionProps)) {
-          return false;
-        }
-
-        this.mappedSubscriptionProps = nextSubscriptionProps;
-        return true;
       }
 
       updatePublishProps(props = this.props) {

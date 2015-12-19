@@ -364,7 +364,6 @@ test(
     pubSub.publish(UPDATE, { label: 'myLabel', name: 'myName' });
     t.is(stub.props.updatedField, 'myLabel');
     wrapper.setState({ updateField: 'name' });
-    t.is(stub.props.updatedField, 'myName');
     pubSub.publish(UPDATE, { label: 'myLabel', name: 'myNewName' });
     t.is(stub.props.updatedField, 'myNewName');
 
@@ -379,10 +378,11 @@ test(
 );
 
 test(
-  'should update subscriptions from `mapSubscriptionsToProps` when props changes only'
-  + ' if the callback defines a second arguments',
+  'should not update subscribed actions when props changes if `mapSubscriptionsToProps`'
+  + ' is an object',
   t => {
     const SIMPLE_UPDATE = 'simpleUpdate';
+    const OTHER_UPDATE = 'otherUpdate';
     const pubSubCore = createPubSub();
     const register = pubSubCore.register;
     let pubSub;
@@ -414,6 +414,10 @@ test(
         const now = new Date().getTime();
         return { simpleField: payload.name, now };
       },
+      [OTHER_UPDATE]: (a, b) => {
+        const otherNow = new Date().getTime();
+        return { otherNow, a, b };
+      },
     };
     const WrapperContainer = createPubSubConnector(mapSubscriptionsToProps)(Container);
 
@@ -428,9 +432,15 @@ test(
     t.is(stub.props.simpleField, undefined);
     pubSub.publish(SIMPLE_UPDATE, { name: 'john' });
     t.is(stub.props.simpleField, 'john');
-    const nowValue = stub.props.now;
+    let nowValue = stub.props.now;
     wrapper.setState({ updateField: 'label' });
     t.is(stub.props.now, nowValue);
+
+    pubSub.publish(OTHER_UPDATE, 'yo', 'ye');
+    t.is(stub.props.a, 'yo');
+    nowValue = stub.props.otherNow;
+    wrapper.setState({ updateField: 'color' });
+    t.is(stub.props.otherNow, nowValue);
 
     t.end();
   }
