@@ -22,7 +22,7 @@ class Conversation extends Component {
     const { conversation } = this.state;
     return (
       <div>
-        <textarea rows="20" cols="50" value={conversation} />
+        <textarea rows="20" cols="50" value={conversation} readOnly/>
       </div>
     );
   }

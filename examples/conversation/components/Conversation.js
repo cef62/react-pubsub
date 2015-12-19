@@ -17,7 +17,8 @@ class Conversation extends Component {
     const { conversation } = this;
     return (
       <div>
-        <textarea rows="20" cols="50" value={conversation} />
+      <h1>Yo there</h1>
+        <textarea rows="20" cols="50" value={conversation} readOnly/>
       </div>
     );
   }
