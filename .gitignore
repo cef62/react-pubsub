@@ -7,3 +7,4 @@ coverage
 .vimsession
 .lvimrc
 .nyc_output
+local_data/
