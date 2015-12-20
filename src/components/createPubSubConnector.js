@@ -44,7 +44,7 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
     mapPublishToProps || defaultMapPublishToProps;
   const shouldUpdatePublishProps = finalMapPublishToProps.length > 1;
 
-  const { withRef = false, ownProps = true } = options || {};
+  const { withRef = false, ownProps = true, forceInitialValues = false } = options || {};
 
   let mappedSubscriptions = {};
   function registerMappedSubscriptions(pubSub, subscriptionsMap = {}, updateSubscriptionProps, getProps) {
@@ -105,9 +105,22 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
     mappedSubscriptions = Object.keys(subscriptionsMap)
     .reduce((acc, key) => {
       const callback = updateMappedSubscriptions(key, subscriptionsMap[key]);
-      acc[key] = add(key, callback);
+      acc[key] = {
+        callback,
+        originalCallback: subscriptionsMap[key],
+        unsubscribe: add(key, callback),
+      };
       return acc;
     }, {});
+  }
+
+  function invokeMappedSubscriptions() {
+    mappedSubscriptions = Object.keys(mappedSubscriptions)
+    .forEach(key => {
+      const { callback, originalCallback } = mappedSubscriptions[key];
+      const initialValues = Array.isArray(originalCallback.initialValues) ? originalCallback.initialValues : [];
+      callback(...initialValues);
+    });
   }
 
   function initSubscriptionFunction(pubSub, subscriptionsFunction, updateSubscriptionProps, getProps) {
@@ -154,7 +167,7 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
             + `or explicitly pass "pubSubCore" as a prop to "${this.constructor.displayName}".`
           );
         }
-
+        this.state = {};
         this.pubSub = this.pubSubCore.register(this);
         this.mappedSubscriptionProps = {};
 
@@ -186,8 +199,12 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
         }
 
         this.publishProps = computePublishProps(this.pubSub, props);
+      }
 
-        this.state = {};
+      componentWillMount() {
+        if (forceInitialValues) {
+          invokeMappedSubscriptions();
+        }
       }
 
       shouldComponentUpdate(nextProps, nextState) {

@@ -1082,3 +1082,77 @@ test(
     t.end();
   }
 );
+
+test(
+  'should invoke all actions mapped when component is instantiated'
+  + ' and option is { forceInitialValues: true }',
+  t => {
+    const SIMPLE_UPDATE = 'simpleUpdate';
+    const pubSubCore = createPubSub();
+
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+
+    const simpleUpdateHandler = (country = 'unknown country') => {
+      console.log('PD', country);
+      return { country };
+    };
+    simpleUpdateHandler.initialValues = ['default country'];
+
+    const WrapperContainer = createPubSubConnector(
+      { [SIMPLE_UPDATE]: simpleUpdateHandler },
+      null, { forceInitialValues: true }
+    )(Container);
+
+    const tree = TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+      <WrapperContainer />
+      </ProviderMock>
+    );
+    const stub = TestUtils.findRenderedComponentWithType(tree, Passthrough);
+
+    t.is(stub.props.country, 'default country');
+
+    t.end();
+  }
+);
+
+test(
+  'should not invoke actions mapped when component is instantiated'
+  + ' but option is { forceInitialValues: false }',
+  t => {
+    const SIMPLE_UPDATE = 'simpleUpdate';
+    const pubSubCore = createPubSub();
+
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+
+    const simpleUpdateHandler = (country = 'unknown country') => {
+      console.log('PD', country);
+      return { country };
+    };
+    simpleUpdateHandler.initialValues = ['default country'];
+
+    const WrapperContainer = createPubSubConnector(
+      { [SIMPLE_UPDATE]: simpleUpdateHandler },
+      null, { forceInitialValues: false }
+    )(Container);
+
+    const tree = TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+      <WrapperContainer />
+      </ProviderMock>
+    );
+    const stub = TestUtils.findRenderedComponentWithType(tree, Passthrough);
+
+    t.is(stub.props.country, undefined);
+
+    t.end();
+  }
+);
