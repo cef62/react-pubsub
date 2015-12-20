@@ -27,11 +27,23 @@ function cleanEmptyKeys(obj = {}) {
 }
 
 export default function createPubSubConnector(mapSubscriptionsToProps, mapPublishToProps, options = {}) {
+  if (
+    mapSubscriptionsToProps &&
+    (typeof mapSubscriptionsToProps !== 'function' && !isPlainObject(mapSubscriptionsToProps))
+  ) {
+    throw new Error(
+      `"createPubSubConnector" expected "mapSubscriptionsToProps" to be a function`
+      + ` or a plain object, instead received: ${mapSubscriptionsToProps}.`
+    );
+  }
   const shouldMapSubscriptions = Boolean(mapSubscriptionsToProps);
+  const mapSubscriptionIsFunction = typeof mapSubscriptionsToProps === 'function';
+
   const finalMapPublishToProps = isPlainObject(mapPublishToProps) ?
     wrapPublishMethods(mapPublishToProps) :
     mapPublishToProps || defaultMapPublishToProps;
   const shouldUpdatePublishProps = finalMapPublishToProps.length > 1;
+
   const { withRef = false, ownProps = true } = options || {};
 
   let mappedSubscriptions = {};
@@ -98,6 +110,20 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
     }, {});
   }
 
+  function initSubscriptionFunction(pubSub, subscriptionsFunction, updateSubscriptionProps, getProps) {
+    // init given function, this invocation will subscribe required actions to
+    // passed pubSub instance
+    const applySubscription = subscriptionsFunction(pubSub, updateSubscriptionProps, getProps);
+
+    if (typeof applySubscription !== 'function') {
+      throw new Error(
+        `'initSubscriptionFunction' expected 'subscriptionsFunction' to return`
+        + ` a function. Instead received: ${applySubscription}`
+      );
+    }
+    return applySubscription;
+  }
+
   function computePublishProps(pubSub, props) {
     const { publish } = pubSub;
     const publishProps = shouldUpdatePublishProps ?
@@ -130,18 +156,36 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
         }
 
         this.pubSub = this.pubSubCore.register(this);
+        this.mappedSubscriptionProps = {};
 
         if (shouldMapSubscriptions) {
-          registerMappedSubscriptions(
-            this.pubSub,
-            mapSubscriptionsToProps,
-            (...args) => this.updateSingleMappedSubscription(...args),
-            () => this.props
-          );
+          if (mapSubscriptionIsFunction) {
+            this.applySubscription = initSubscriptionFunction(
+              this.pubSub,
+              mapSubscriptionsToProps,
+              (...args) => this.updateSingleMappedSubscription(...args),
+                () => this.props
+            );
+            this.mappedSubscriptionProps = this.applySubscription(props);
+
+            if (!isPlainObject(this.mappedSubscriptionProps)) {
+              throw new Error(
+                `'pubSubConnector' expected an object returned from`
+                + ` given .applySubscription() method. Instead received:`
+                + ` ${this.mappedSubscriptionProps}`
+              );
+            }
+          } else {
+            registerMappedSubscriptions(
+              this.pubSub,
+              mapSubscriptionsToProps,
+              (...args) => this.updateSingleMappedSubscription(...args),
+                () => this.props
+            );
+          }
         }
 
         this.publishProps = computePublishProps(this.pubSub, props);
-        this.mappedSubscriptionProps = {};
 
         this.state = {};
       }
@@ -149,13 +193,16 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
       shouldComponentUpdate(nextProps, nextState) {
         const stateChanged = !shallowEqual(nextState, this.state);
         const propsChanged = !shallowEqual(nextProps, this.props);
-        let publishPropsChanged = false;
 
         if (propsChanged && shouldUpdatePublishProps) {
-          publishPropsChanged = this.updatePublishProps(nextProps);
+          this.updatePublishProps(nextProps);
         }
 
-        return propsChanged || stateChanged || publishPropsChanged;
+        if (propsChanged && shouldMapSubscriptions && mapSubscriptionIsFunction) {
+          this.updateMappedSubscriptionsProps(nextProps);
+        }
+
+        return propsChanged || stateChanged;
       }
 
       componentWillUnmount() {
@@ -182,14 +229,20 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
         }
       }
 
+      updateMappedSubscriptionsProps(props = this.props) {
+        const newValues = this.applySubscription(props);
+        Object.assign(this.mappedSubscriptionProps, newValues);
+        cleanEmptyKeys(this.mappedSubscriptionProps);
+      }
+
       updatePublishProps(props = this.props) {
         const nextPublishProps = computePublishProps(this.pubSub, props);
+
         if (shallowEqual(nextPublishProps, this.publishProps)) {
           return false;
         }
 
         this.publishProps = nextPublishProps;
-        return true;
       }
 
       hasSubscriptions() {

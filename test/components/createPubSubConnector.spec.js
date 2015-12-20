@@ -733,3 +733,352 @@ test(
     t.end();
   }
 );
+
+test(
+  'should throws if `mapSubscriptionsToProps` is not a function'
+  + ' or a plain object',
+  t => {
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+
+    t.throws(
+      () => createPubSubConnector('subscriptionsToProps')(Container),
+        /"createPubSubConnector" expected "mapSubscriptionsToProps" to be a function or a plain object, instead received:/
+    );
+    t.throws(
+      () => createPubSubConnector([1, 2, 3])(Container),
+        /"createPubSubConnector" expected "mapSubscriptionsToProps" to be a function or a plain object, instead received:/
+    );
+    t.doesNotThrow(() => createPubSubConnector()(Container));
+    t.doesNotThrow(() => createPubSubConnector({})(Container));
+    t.doesNotThrow(() => createPubSubConnector({ action: () => {} })(Container));
+    t.doesNotThrow(() => createPubSubConnector(() => {})(Container));
+
+    t.end();
+  }
+);
+
+test(
+  'should throws if `mapSubscriptionsToProps` is a function but does not return a function',
+  t => {
+    const pubSubCore = createPubSub();
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+    const invalidSubscription = () => 'hello';
+    let Wrapper = createPubSubConnector(invalidSubscription)(Container);
+
+    t.throws(
+      () => TestUtils.renderIntoDocument(
+        <ProviderMock pubSubCore={pubSubCore}>
+        <Wrapper />
+        </ProviderMock>
+      ),
+      /\'initSubscriptionFunction\' expected \'subscriptionsFunction\' to return a function\. Instead received:/
+    );
+
+    const validSubscription = () => () => ({});
+    Wrapper = createPubSubConnector(validSubscription)(Container);
+    t.doesNotThrow(
+      () => TestUtils.renderIntoDocument(
+        <ProviderMock pubSubCore={pubSubCore}>
+        <Wrapper />
+        </ProviderMock>
+      )
+    );
+
+    t.end();
+  }
+);
+
+test(
+  'should invoke only once `mapSubscriptionsToProps` if is a function',
+  t => {
+    const pubSubCore = createPubSub();
+    const register = pubSubCore.register;
+    let pubSub;
+    pubSubCore.register = (...args) => {
+      pubSub = register(...args);
+      return pubSub;
+    };
+
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+    const subscription = () => () => ({});
+    const spy = sinon.spy(subscription);
+    const Wrapper = createPubSubConnector(spy)(Container);
+
+    TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+      <Wrapper color="red" />
+      </ProviderMock>
+    );
+
+    t.true(spy.calledOnce);
+    t.is(spy.lastCall.args.length, 3);
+    t.is(spy.lastCall.args[0], pubSub);
+    t.is(typeof spy.lastCall.args[1], 'function'); // update method
+    t.is(typeof spy.lastCall.args[2], 'function'); // get current props method
+    t.same(spy.lastCall.args[2](), { color: 'red' });
+
+    t.end();
+  }
+);
+
+test(
+  'should throws if the function returned from `mapSubscriptionsToProps` is'
+  + ' not undefined, null or an object',
+  t => {
+    const pubSubCore = createPubSub();
+
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+
+    let Wrapper = createPubSubConnector(() => () => {})(Container);
+    t.throws(
+    () => TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+        <Wrapper />
+      </ProviderMock>
+      ),
+      /'pubSubConnector' expected an object returned from given \.applySubscription\(\) method\. Instead received:/
+    );
+
+    Wrapper = createPubSubConnector(() => () => ({ a: 1 }))(Container);
+    t.doesNotThrow(() => TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+        <Wrapper />
+      </ProviderMock>
+    ));
+
+    Wrapper = createPubSubConnector(() => () => ([1, 2]))(Container);
+    t.throws(
+      () => TestUtils.renderIntoDocument(
+        <ProviderMock pubSubCore={pubSubCore}>
+        <Wrapper />
+        </ProviderMock>
+      ),
+      /'pubSubConnector' expected an object returned from given \.applySubscription\(\) method\. Instead received:/
+    );
+
+    Wrapper = createPubSubConnector(() => () => 'hello!')(Container);
+    t.throws(
+      () => TestUtils.renderIntoDocument(
+        <ProviderMock pubSubCore={pubSubCore}>
+        <Wrapper />
+        </ProviderMock>
+      ),
+      /'pubSubConnector' expected an object returned from given \.applySubscription\(\) method\. Instead received:/
+    );
+
+    t.end();
+  }
+);
+
+test(
+  'should invoke the function returned from `mapSubscriptionsToProps` once'
+  + 'when the component is instantiated.',
+  t => {
+    const pubSubCore = createPubSub();
+
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+
+    const spy = sinon.spy(() => ({}));
+    const subscription = () => spy;
+    const Wrapper = createPubSubConnector(subscription)(Container);
+
+    TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+        <Wrapper />
+      </ProviderMock>
+    );
+
+    t.true(spy.calledOnce);
+
+    t.end();
+  }
+);
+
+test(
+  'should pass down the values returned from initial invocation of the'
+  + ' function returned from `mapSubscriptionsToProps`'
+  + ' when the component is instantiated.',
+  t => {
+    const pubSubCore = createPubSub();
+
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+
+    const subscription = () => () => ({ color: 'red', info: { name: 'mike' } });
+    const Wrapper = createPubSubConnector(subscription)(Container);
+
+    const tree = TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+        <Wrapper />
+      </ProviderMock>
+    );
+    const stub = TestUtils.findRenderedComponentWithType(tree, Passthrough);
+
+    t.is(stub.props.color, 'red');
+    t.same(stub.props.info, { name: 'mike' });
+
+    t.end();
+  }
+);
+
+test(
+  'should invoke the function returned from `mapSubscriptionsToProps` every time'
+  + ' the props of the component will change',
+  t => {
+    const pubSubCore = createPubSub();
+
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+
+    const spy = sinon.spy(props => ({
+      color: 'red',
+      info: { name: props.receivedName },
+    }));
+    const subscription = () => spy;
+    const Wrapper = createPubSubConnector(subscription)(Container);
+
+    class ControlledState extends Component {
+      constructor() {
+        super();
+        this.state = { receivedName: 'mike' };
+      }
+
+      render() {
+        const { receivedName } = this.state;
+        return (<Wrapper receivedName={receivedName} />);
+      }
+    }
+
+    const tree = TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+        <ControlledState />
+      </ProviderMock>
+    );
+    const owner = TestUtils.findRenderedComponentWithType(tree, ControlledState);
+
+    t.is(spy.callCount, 1);
+    owner.setState({ receivedName: 'john' });
+    owner.setState({ receivedName: 'jake' });
+    t.is(spy.callCount, 3);
+
+    t.end();
+  }
+);
+
+test(
+  'should pass down the values returned from any invocation of the'
+  + ' function returned from `mapSubscriptionsToProps`'
+  + ' every time the props of the component will change',
+  t => {
+    const pubSubCore = createPubSub();
+
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+
+    const subscription = () => props => ({
+      color: 'red',
+      info: { name: props.receivedName },
+    });
+    const Wrapper = createPubSubConnector(subscription)(Container);
+
+    class ControlledState extends Component {
+      constructor() {
+        super();
+        this.state = { receivedName: 'mike' };
+      }
+
+      render() {
+        const { receivedName } = this.state;
+        return (<Wrapper receivedName={receivedName} />);
+      }
+    }
+
+    const tree = TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+        <ControlledState />
+      </ProviderMock>
+    );
+    const owner = TestUtils.findRenderedComponentWithType(tree, ControlledState);
+    const stub = TestUtils.findRenderedComponentWithType(tree, Passthrough);
+
+    t.is(stub.props.color, 'red');
+    t.same(stub.props.info, { name: 'mike' });
+    owner.setState({ receivedName: 'john' });
+    t.same(stub.props.info, { name: 'john' });
+
+    t.end();
+  }
+);
+
+test(
+  'should pass down the values returned from actions mapped from'
+  + ' `mapSubscriptionsToProps`.',
+  t => {
+    const ACTION = 'action';
+    const pubSubCore = createPubSub();
+    const register = pubSubCore.register;
+    let pubSub;
+    pubSubCore.register = (...args) => {
+      pubSub = register(...args);
+      return pubSub;
+    };
+
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+
+    const subscription = (pubSubInstance, updateProps, getProps) => {
+      pubSubInstance.add(ACTION, suffix => {
+        const { name } = getProps();
+        updateProps({ name: `${name} [${suffix}]` });
+      });
+
+      return () => ({});
+    };
+    const Wrapper = createPubSubConnector(subscription)(Container);
+
+    const tree = TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+        <Wrapper name="mike" />
+      </ProviderMock>
+    );
+    const stub = TestUtils.findRenderedComponentWithType(tree, Passthrough);
+
+    t.is(stub.props.name, 'mike');
+    pubSub.publish(ACTION, 'tyson');
+    t.is(stub.props.name, 'mike [tyson]');
+
+    t.end();
+  }
+);
