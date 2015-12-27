@@ -1,8 +1,11 @@
 import { Component, createElement } from 'react';
 import hoistStatics from 'hoist-non-react-statics';
-import isPlainObject from '../utils/isPlainObject';
-import shallowEqual from '../utils/shallowEqual';
-import pubSubShape from '../shapes/pubSubShape';
+import isPlainObject from '../../utils/isPlainObject';
+import shallowEqual from '../../utils/shallowEqual';
+import pubSubShape from '../../shapes/pubSubShape';
+
+import registerSubscriptionsMap from './registerSubscriptionsMap';
+import registerSubscriptionFunction from './registerSubscriptionFunction';
 
 const defaultMapPublishToProps = publish => ({ publish });
 
@@ -46,97 +49,6 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
 
   const { withRef = false, ownProps = true, forceInitialValues = false } = options || {};
 
-  let mappedSubscriptions = {};
-  function registerMappedSubscriptions(pubSub, subscriptionsMap = {}, updateSubscriptionProps, getProps) {
-    const { add } = pubSub;
-
-    // TODO: should be necessary to support hot reload
-    const mappedSubscriptionsKeys = Object.keys(mappedSubscriptions);
-    if (mappedSubscriptionsKeys.length) {
-      mappedSubscriptionsKeys.forEach(key => mappedSubscriptions[key].unsubscribe());
-    }
-
-    if (!Object.keys(subscriptionsMap).length) {
-      return;
-    }
-
-    const validMappedSubscriptions = Object.keys(subscriptionsMap)
-    .every(key => (typeof subscriptionsMap[key] === 'function' || typeof subscriptionsMap[key] === 'string'));
-
-    if (!validMappedSubscriptions) {
-      throw new Error(
-        `Every mapped Subscription of "createPubSubConnector" must be a function`
-        + `returning the value to be passed as prop to the decorated component.`
-      );
-    }
-
-    const updateMappedSubscriptions = (key, transformerOrAlias) => {
-      let callback;
-      if (typeof transformerOrAlias === 'function') {
-        callback = (...args) => {
-          // transform values
-          const newValues = ownProps ?
-            transformerOrAlias(...args, getProps())
-            : transformerOrAlias(...args);
-
-          if (!isPlainObject(newValues)) {
-            throw new Error(
-              `Transformer functions for mapped subscriptions must return a plain object, `
-              + `instead received %s.`
-            );
-          }
-
-          if (!Object.keys(newValues).length) {
-            throw new Error(
-              `Transformer functions for mapped subscriptions must return an object`
-              + `with at least one property.`
-            );
-          }
-
-          updateSubscriptionProps(newValues);
-        };
-      } else {
-        callback = result => updateSubscriptionProps({ [transformerOrAlias]: result });
-      }
-
-      return callback;
-    };
-
-    mappedSubscriptions = Object.keys(subscriptionsMap)
-    .reduce((acc, key) => {
-      const callback = updateMappedSubscriptions(key, subscriptionsMap[key]);
-      acc[key] = {
-        callback,
-        originalCallback: subscriptionsMap[key],
-        unsubscribe: add(key, callback),
-      };
-      return acc;
-    }, {});
-  }
-
-  function invokeMappedSubscriptions() {
-    mappedSubscriptions = Object.keys(mappedSubscriptions)
-    .forEach(key => {
-      const { callback, originalCallback } = mappedSubscriptions[key];
-      const initialValues = Array.isArray(originalCallback.initialValues) ? originalCallback.initialValues : [];
-      callback(...initialValues);
-    });
-  }
-
-  function initSubscriptionFunction(pubSub, subscriptionsFunction, updateSubscriptionProps, getProps) {
-    // init given function, this invocation will subscribe required actions to
-    // passed pubSub instance
-    const applySubscription = subscriptionsFunction(pubSub, updateSubscriptionProps, getProps);
-
-    if (typeof applySubscription !== 'function') {
-      throw new Error(
-        `'initSubscriptionFunction' expected 'subscriptionsFunction' to return`
-        + ` a function. Instead received: ${applySubscription}`
-      );
-    }
-    return applySubscription;
-  }
-
   function computePublishProps(pubSub, props) {
     const { publish } = pubSub;
     const publishProps = shouldUpdatePublishProps ?
@@ -170,15 +82,18 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
         this.state = {};
         this.pubSub = this.pubSubCore.register(this);
         this.mappedSubscriptionProps = {};
+        this.subscriptionsMap = {};
 
         if (shouldMapSubscriptions) {
           if (mapSubscriptionIsFunction) {
-            this.applySubscription = initSubscriptionFunction(
+            this.subscriptionsMap = registerSubscriptionFunction();
+            this.applySubscription = this.subscriptionsMap.register(
               this.pubSub,
               mapSubscriptionsToProps,
               (...args) => this.updateSingleMappedSubscription(...args),
                 () => this.props
             );
+
             this.mappedSubscriptionProps = this.applySubscription(props);
 
             if (!isPlainObject(this.mappedSubscriptionProps)) {
@@ -189,7 +104,8 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
               );
             }
           } else {
-            registerMappedSubscriptions(
+            this.subscriptionsMap = registerSubscriptionsMap(ownProps);
+            this.subscriptionsMap.register(
               this.pubSub,
               mapSubscriptionsToProps,
               (...args) => this.updateSingleMappedSubscription(...args),
@@ -203,7 +119,7 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
 
       componentWillMount() {
         if (forceInitialValues) {
-          invokeMappedSubscriptions();
+          this.subscriptionsMap.invokeMappedSubscriptions();
         }
       }
 
@@ -223,7 +139,7 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
       }
 
       componentWillUnmount() {
-        mappedSubscriptions = {};
+        this.subscriptionsMap.mappedSubscriptions = {};
         this.pubSub.unsubscribe();
       }
 
@@ -263,7 +179,10 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
       }
 
       hasSubscriptions() {
-        return Object.keys(mappedSubscriptions).length > 0;
+        if (shouldMapSubscriptions) {
+          return mapSubscriptionIsFunction || Object.keys(this.subscriptionsMap.mappedSubscriptions).length > 0;
+        }
+        return false;
       }
 
       render() {
