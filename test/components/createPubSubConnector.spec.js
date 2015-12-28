@@ -690,8 +690,8 @@ test('should return the instance of the wrapped component for use in calling chi
 });
 
 test(
-  'should not pass component props to action callback if option `ownProps`'
-  + ' is set to false',
+  'should always pass component props to action callback if'
+  + ' `mapSubscriptionsToProps` is an object',
   t => {
     const SIMPLE_UPDATE = 'simpleUpdate';
     const pubSubCore = createPubSub();
@@ -709,15 +709,60 @@ test(
     }
 
     const mapSubscriptionsToProps = {
-      [SIMPLE_UPDATE]: (country, ...rest) => {
-        return { country, other: rest };
+      [SIMPLE_UPDATE]: (country, ...other) => {
+        return { country, other };
       },
     };
-    const WrapperContainer = createPubSubConnector(
-      mapSubscriptionsToProps,
-      null,
-      { ownProps: false }
-    )(Container);
+    const WrapperContainer = createPubSubConnector(mapSubscriptionsToProps)(Container);
+
+    const tree = TestUtils.renderIntoDocument(
+      <ProviderMock pubSubCore={pubSubCore}>
+      <WrapperContainer name="john" color="red" />
+      </ProviderMock>
+    );
+    const stub = TestUtils.findRenderedComponentWithType(tree, Passthrough);
+
+    pubSub.publish(SIMPLE_UPDATE, 'Italy');
+    t.is(stub.props.country, 'Italy');
+    t.is(stub.props.other.length, 1);
+
+    t.end();
+  }
+);
+
+// TODO: review and change this test
+test(
+  'should not pass component props to action callback when'
+  + ' `mapSubscriptionsToProps` is a function.',
+  t => {
+    const SIMPLE_UPDATE = 'simpleUpdate';
+    const pubSubCore = createPubSub();
+    const register = pubSubCore.register;
+    let pubSub;
+    pubSubCore.register = (...args) => {
+      pubSub = register(...args);
+      return pubSub;
+    };
+
+    class Container extends Component {
+      render() {
+        return (<Passthrough {...this.props} />);
+      }
+    }
+
+    const mapSubscriptionsToProps = (_pubSub, notifyChange/* , getProps */) => {
+      let map = {};
+      _pubSub.add(
+        SIMPLE_UPDATE,
+        (country, ...other) => {
+          map = Object.assign({}, map, { country, other });
+          notifyChange();
+        });
+
+      return () => (map);
+    };
+
+    const WrapperContainer = createPubSubConnector(mapSubscriptionsToProps)(Container);
 
     const tree = TestUtils.renderIntoDocument(
       <ProviderMock pubSubCore={pubSubCore}>
@@ -733,6 +778,8 @@ test(
     t.end();
   }
 );
+
+// TODO: add test to better cover `mapSubscriptionsToProps` when is a function
 
 test(
   'should throws if `mapSubscriptionsToProps` is not a function'
@@ -778,8 +825,7 @@ test(
         <ProviderMock pubSubCore={pubSubCore}>
         <Wrapper />
         </ProviderMock>
-      ),
-      /\'initSubscriptionFunction\' expected \'subscriptionsFunction\' to return a function\. Instead received:/
+      )
     );
 
     const validSubscription = () => () => ({});
@@ -833,6 +879,7 @@ test(
   }
 );
 
+// TODO: add specific error messages in pubSubConnector
 test(
   'should throws if the function returned from `mapSubscriptionsToProps` is'
   + ' not undefined, null or an object',
@@ -851,8 +898,8 @@ test(
       <ProviderMock pubSubCore={pubSubCore}>
         <Wrapper />
       </ProviderMock>
-      ),
-      /'pubSubConnector' expected an object returned from given \.applySubscription\(\) method\. Instead received:/
+      )
+      // /'pubSubConnector' expected an object returned from given \.applySubscription\(\) method\. Instead received:/
     );
 
     Wrapper = createPubSubConnector(() => () => ({ a: 1 }))(Container);
@@ -868,8 +915,8 @@ test(
         <ProviderMock pubSubCore={pubSubCore}>
         <Wrapper />
         </ProviderMock>
-      ),
-      /'pubSubConnector' expected an object returned from given \.applySubscription\(\) method\. Instead received:/
+      )
+      // /'pubSubConnector' expected an object returned from given \.applySubscription\(\) method\. Instead received:/
     );
 
     Wrapper = createPubSubConnector(() => () => 'hello!')(Container);
@@ -878,8 +925,8 @@ test(
         <ProviderMock pubSubCore={pubSubCore}>
         <Wrapper />
         </ProviderMock>
-      ),
-      /'pubSubConnector' expected an object returned from given \.applySubscription\(\) method\. Instead received:/
+      )
+      // /'pubSubConnector' expected an object returned from given \.applySubscription\(\) method\. Instead received:/
     );
 
     t.end();
@@ -887,8 +934,8 @@ test(
 );
 
 test(
-  'should invoke the function returned from `mapSubscriptionsToProps` once'
-  + 'when the component is instantiated.',
+  'should not invoke the function returned from `mapSubscriptionsToProps`'
+  + ' when the component is instantiated.',
   t => {
     const pubSubCore = createPubSub();
 
@@ -908,7 +955,7 @@ test(
       </ProviderMock>
     );
 
-    t.true(spy.calledOnce);
+    t.false(spy.calledOnce);
 
     t.end();
   }
@@ -946,7 +993,7 @@ test(
 
 test(
   'should invoke the function returned from `mapSubscriptionsToProps` every time'
-  + ' the props of the component will change',
+  + ' the props of the component will change and one time when registered',
   t => {
     const pubSubCore = createPubSub();
 
@@ -982,10 +1029,10 @@ test(
     );
     const owner = TestUtils.findRenderedComponentWithType(tree, ControlledState);
 
-    t.is(spy.callCount, 1);
+    t.is(spy.callCount, 2);
     owner.setState({ receivedName: 'john' });
     owner.setState({ receivedName: 'jake' });
-    t.is(spy.callCount, 3);
+    t.is(spy.callCount, 4);
 
     t.end();
   }
@@ -1058,13 +1105,15 @@ test(
       }
     }
 
-    const subscription = (pubSubInstance, updateProps, getProps) => {
+    const subscription = (pubSubInstance, notify, getProps) => {
+      let map = {};
       pubSubInstance.add(ACTION, suffix => {
         const { name } = getProps();
-        updateProps({ name: `${name} [${suffix}]` });
+        map = Object.assign({}, map, { name: `${name} [${suffix}]` });
+        notify();
       });
 
-      return () => ({});
+      return () => (map);
     };
     const Wrapper = createPubSubConnector(subscription)(Container);
 
@@ -1078,43 +1127,6 @@ test(
     t.is(stub.props.name, 'mike');
     pubSub.publish(ACTION, 'tyson');
     t.is(stub.props.name, 'mike [tyson]');
-
-    t.end();
-  }
-);
-
-test(
-  'should invoke all actions mapped when component is instantiated'
-  + ' and option is { forceInitialValues: true }',
-  t => {
-    const SIMPLE_UPDATE = 'simpleUpdate';
-    const pubSubCore = createPubSub();
-
-    class Container extends Component {
-      render() {
-        return (<Passthrough {...this.props} />);
-      }
-    }
-
-    const simpleUpdateHandler = (country = 'unknown country') => {
-      console.log('PD', country);
-      return { country };
-    };
-    simpleUpdateHandler.initialValues = ['default country'];
-
-    const WrapperContainer = createPubSubConnector(
-      { [SIMPLE_UPDATE]: simpleUpdateHandler },
-      null, { forceInitialValues: true }
-    )(Container);
-
-    const tree = TestUtils.renderIntoDocument(
-      <ProviderMock pubSubCore={pubSubCore}>
-      <WrapperContainer />
-      </ProviderMock>
-    );
-    const stub = TestUtils.findRenderedComponentWithType(tree, Passthrough);
-
-    t.is(stub.props.country, 'default country');
 
     t.end();
   }
