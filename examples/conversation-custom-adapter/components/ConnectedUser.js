@@ -6,6 +6,8 @@ class ConnectedUser extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {};
+    this.inputChanged = this.inputChanged.bind(this);
+    this.talk = this.talk.bind(this);
   }
 
   talk() {
@@ -27,12 +29,12 @@ class ConnectedUser extends Component {
       <div>
         <strong>{owner}:</strong>
         <input
-          onChange={(evt) => this.inputChanged(evt)}
+          onChange={this.inputChanged}
           value={msg}
           type="text" placeholder="Say something"/>
         <button
           disabled={!msg}
-          onClick={() => this.talk()}>talk</button>
+          onClick={this.talk}>talk</button>
       </div>
     );
   }

@@ -1,25 +1,11 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import { TALK } from '../utils/constants';
 import { createPubSubConnector } from 'react-pubsub';
 import subscriptionShape from 'react-pubsub/shapes/subscriptionShape';
 
 class Conversation extends Component {
-  constructor(props, context) {
-    super(props, context);
-    this.state = {};
-  }
-
-  componentDidMount() {
-    const { pubSub: { add } } = this.props;
-    add(TALK, ({ msg, owner }) => {
-      const { conversation: oldConversation = '' } = this.state;
-      const conversation = `${oldConversation}\n[${owner}]: ${msg}`;
-      this.setState({ conversation });
-    });
-  }
-
   render() {
-    const { conversation } = this.state;
+    const { conversation } = this.props;
     return (
       <div>
         <textarea rows="20" cols="50" value={conversation} readOnly/>
@@ -30,6 +16,20 @@ class Conversation extends Component {
 
 Conversation.propTypes = {
   pubSub: subscriptionShape.isRequired,
+  conversation: PropTypes.string,
 };
 
-export default createPubSubConnector()(Conversation);
+Conversation.defaultProps = {
+  conversation: '',
+};
+
+const mapSubscriptionsToProps = {
+  [TALK]: (res = {}, ownProps) => {
+    const { msg, owner } = res;
+    const { conversation: oldConversation = '' } = ownProps;
+    const conversation = `${oldConversation}\n[${owner}]: ${msg}`;
+    return { conversation };
+  },
+};
+
+export default createPubSubConnector(mapSubscriptionsToProps)(Conversation);

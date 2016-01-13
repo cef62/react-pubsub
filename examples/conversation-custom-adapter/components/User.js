@@ -7,6 +7,8 @@ export default class User extends Component {
     super(props, context);
     this.pubSub = context.pubSubCore.register(this);
     this.state = {};
+    this.inputChanged = this.inputChanged.bind(this);
+    this.talk = this.talk.bind(this);
   }
 
   componentWillUnmount() {
@@ -34,12 +36,12 @@ export default class User extends Component {
       <div>
         <strong>{owner}:</strong>
         <input
-          onChange={(evt) => this.inputChanged(evt)}
+          onChange={this.inputChanged}
           value={message}
           type="text" placeholder="Say something"/>
         <button
           disabled={!message}
-          onClick={() => this.talk()}>talk</button>
+          onClick={this.talk}>talk</button>
       </div>
     );
   }
