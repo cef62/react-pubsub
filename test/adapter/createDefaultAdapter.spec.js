@@ -1,7 +1,7 @@
 import test from 'ava';
 import sinon from 'sinon';
 import 'babel-core/register';
-import consoleMock from '../helpers/_consoleMock';
+import consoleMock from '../helpers/consoleMock';
 import createDefaultAdapter from '../../src/adapter/createDefaultAdapter';
 
 const log = consoleMock(); // eslint-disable-line no-unused-vars
@@ -15,8 +15,6 @@ test('should return an object with a valid adapter interface', t => {
   t.is(typeof adapter.subscribe, 'function');
   t.is(typeof adapter.unsubscribe, 'function');
   t.is(typeof adapter.publish, 'function');
-
-  t.end();
 });
 
 test('.subscribe() should throws if `action` is missing or falsy', t => {
@@ -38,8 +36,6 @@ test('.subscribe() should throws if `action` is missing or falsy', t => {
     () => subscribe(false),
     /Default adapter '\.subscribe\(\)' expected an action \(string\) as first argument instead received:/
   );
-
-  t.end();
 });
 
 test('.subscribe() should throws if `action` is not a string', t => {
@@ -62,8 +58,6 @@ test('.subscribe() should throws if `action` is not a string', t => {
     /Default adapter '\.subscribe\(\)' expected an action \(string\) as first argument instead received:/
   );
   t.doesNotThrow(() => subscribe('test', () => {}));
-
-  t.end();
 });
 
 test('.subscribe() should throws if `callback` is missing or falsy', t => {
@@ -85,8 +79,6 @@ test('.subscribe() should throws if `callback` is missing or falsy', t => {
     () => subscribe('test', 0),
     /Default adapter '\.subscribe\(\)' expected a function as second argument instead received:/
   );
-
-  t.end();
 });
 
 test('.subscribe() should throws if `callback` is not a function', t => {
@@ -113,8 +105,6 @@ test('.subscribe() should throws if `callback` is not a function', t => {
     /Default adapter '\.subscribe\(\)' expected a function as second argument instead received:/
   );
   t.doesNotThrow(() => subscribe('test', () => {}));
-
-  t.end();
 });
 
 test('.subscribe() should return a subscription token', t => {
@@ -122,7 +112,6 @@ test('.subscribe() should return a subscription token', t => {
   const token = subscribe('test', () => {});
 
   t.true(Array.isArray(token));
-  t.end();
 });
 
 test('.unsubscribe() should throws if `token` is missing or falsy', t => {
@@ -144,8 +133,6 @@ test('.unsubscribe() should throws if `token` is missing or falsy', t => {
     () => unsubscribe(false),
     /Default adapter '\.unsubscribe\(\)' expected a token \(array\) instead received:/
   );
-
-  t.end();
 });
 
 test('.unsubscribe() should throws if `token` doesn\'t validate', t => {
@@ -168,8 +155,6 @@ test('.unsubscribe() should throws if `token` doesn\'t validate', t => {
     /Default adapter '\.unsubscribe\(\)' expected a valid token \(\[string, function\]\) instead received:/
   );
   t.doesNotThrow(() => unsubscribe(['test', () => {}]));
-
-  t.end();
 });
 
 test('.unsubscribe() should print an error if `token` is not bind to a subscription', t => {
@@ -181,8 +166,6 @@ test('.unsubscribe() should print an error if `token` is not bind to a subscript
 
   t.is(spy.callCount, 1);
   t.true(spy.calledWith(`You're unsubscribing an unrecognized token test,function () {}`));
-
-  t.end();
 });
 
 test('.unsubscribe() should unsubscribe given `token`', t => {
@@ -196,8 +179,6 @@ test('.unsubscribe() should unsubscribe given `token`', t => {
   unsubscribe(token);
   publish('yoooo', 'some data');
   t.true(callback.calledOnce);
-
-  t.end();
 });
 
 test('.publish() should throws if `action` is missing or falsy', t => {
@@ -219,8 +200,6 @@ test('.publish() should throws if `action` is missing or falsy', t => {
     () => publish(null),
     /Default adapter '\.publish\(\)' expected an action \(string\) as first argument instead received:/
   );
-
-  t.end();
 });
 
 test('.publish() should throws if `action` is not a string', t => {
@@ -243,8 +222,6 @@ test('.publish() should throws if `action` is not a string', t => {
     /Default adapter '\.publish\(\)' expected an action \(string\) as first argument instead received:/
   );
   t.doesNotThrow(() => publish('test'));
-
-  t.end();
 });
 
 test('.publish() should accept any number of parameters', t => {
@@ -255,14 +232,11 @@ test('.publish() should accept any number of parameters', t => {
   t.doesNotThrow(() => publish('test', true, 44, 'a'));
   t.doesNotThrow(() => publish('test', {}));
   t.doesNotThrow(() => publish('test', []));
-
-  t.end();
 });
 
 test('.publish() should not throw if `params` is missing', t => {
   const { publish } = createDefaultAdapter();
   t.doesNotThrow(() => publish('test'));
-  t.end();
 });
 
 test('.publish() should notify if `action` has no listener', t => {
@@ -274,8 +248,6 @@ test('.publish() should notify if `action` has no listener', t => {
 
   t.is(spy.callCount, 1);
   t.true(spy.calledWith(`The action 'myTest' being published has no listeners`));
-
-  t.end();
 });
 
 test('.publish() should invoke subscribed listeners for received `action`', t => {
@@ -295,6 +267,4 @@ test('.publish() should invoke subscribed listeners for received `action`', t =>
   t.true(callback1.calledWith('some data'));
   t.true(callback2.calledWith('some data'));
   t.true(callback3.calledWith('some data'));
-
-  t.end();
 });

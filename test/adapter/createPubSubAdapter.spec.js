@@ -8,7 +8,6 @@ test('should return an object with a specific interface', t => {
   t.true(api.hasOwnProperty('publish'));
   t.true(api.hasOwnProperty('subscribe'));
   t.true(api.hasOwnProperty('unsubscribe'));
-  t.end();
 });
 
 test('should expose correct methods from given adapter', t => {
@@ -26,7 +25,6 @@ test('should expose correct methods from given adapter', t => {
 
   api.unsubscribe();
   t.true(api.unsubscribe.called);
-  t.end();
 });
 
 test('should throws if doesn\'t receive a valid adapter', t => {
@@ -42,5 +40,4 @@ test('should throws if doesn\'t receive a valid adapter', t => {
     const api = createPubSubAdapter([1, 2, 3]);
     api.publish();
   });
-  t.end();
 });

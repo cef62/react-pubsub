@@ -15,8 +15,6 @@ test('should return an object with a valid pubSub interface', t => {
   t.is(typeof api.unsubscribe, 'function');
   t.is(typeof api.publish, 'function');
   t.true(Array.isArray(api.subscriptions));
-
-  t.end();
 });
 
 test('should throws if `adapter` is missing or falsy', t => {
@@ -24,7 +22,6 @@ test('should throws if `adapter` is missing or falsy', t => {
   t.throws(() => createSubscription(null));
   t.throws(() => createSubscription(false));
   t.throws(() => createSubscription(0));
-  t.end();
 });
 
 test('should throws if `unsubscribe` is missing or falsy', t => {
@@ -32,7 +29,6 @@ test('should throws if `unsubscribe` is missing or falsy', t => {
   t.throws(() => createSubscription({}, null));
   t.throws(() => createSubscription({}, false));
   t.throws(() => createSubscription({}, 0));
-  t.end();
 });
 
 test('.unsubscribe() should invoke `unsubscribe` method received on creation', t => {
@@ -40,7 +36,6 @@ test('.unsubscribe() should invoke `unsubscribe` method received on creation', t
   const api = createSubscription({}, unsubscribe);
   api.unsubscribe();
   t.true(unsubscribe.called);
-  t.end();
 });
 
 test('.add() should throws if `action` is missing or falsy', t => {
@@ -49,7 +44,6 @@ test('.add() should throws if `action` is missing or falsy', t => {
   t.throws(() => api.add(null));
   t.throws(() => api.add(false));
   t.throws(() => api.add(0));
-  t.end();
 });
 
 test('.add() should throws if `action` is not a string', t => {
@@ -59,7 +53,6 @@ test('.add() should throws if `action` is not a string', t => {
   const api = createSubscription(adapter, () => {});
   t.throws(() => api.add());
   t.doesNotThrow(() => api.add('test', () => {}));
-  t.end();
 });
 
 test('.add() should throws if `callback` is missing or falsy', t => {
@@ -71,7 +64,6 @@ test('.add() should throws if `callback` is missing or falsy', t => {
   t.throws(() => api.add('test', null));
   t.throws(() => api.add('test', false));
   t.throws(() => api.add('test', 0));
-  t.end();
 });
 
 test('.add() should throws if `callback` is not a function', t => {
@@ -81,7 +73,6 @@ test('.add() should throws if `callback` is not a function', t => {
   const api = createSubscription(adapter, () => {});
   t.throws(() => api.add('test', 'hey'));
   t.doesNotThrow(() => api.add('test', () => {}));
-  t.end();
 });
 
 test('.add() should invoke .subscribe() on the given adapter object', t => {
@@ -94,7 +85,6 @@ test('.add() should invoke .subscribe() on the given adapter object', t => {
 
   t.true(adapter.subscribe.called);
   t.true(adapter.subscribe.calledWith('test', cb));
-  t.end();
 });
 
 test('.add() should append the registered subscription to `subscription` list', t => {
@@ -107,8 +97,6 @@ test('.add() should append the registered subscription to `subscription` list', 
   t.is(api.subscriptions.length, 0);
   api.add('test', cb);
   t.is(api.subscriptions.length, 1);
-
-  t.end();
 });
 
 test('.add() should return a function', t => {
@@ -119,7 +107,6 @@ test('.add() should return a function', t => {
 
   const unsubscribe = api.add('test', () => {});
   t.is(typeof unsubscribe, 'function');
-  t.end();
 });
 
 test('.add() returned function should remove the subscription from the adapter', t => {
@@ -132,7 +119,6 @@ test('.add() returned function should remove the subscription from the adapter',
   const unsubscribe = api.add('test', () => {});
   unsubscribe();
   t.true(adapter.unsubscribe.called);
-  t.end();
 });
 
 test('.add() returned function should remove the subscription from the subscriptions list', t => {
@@ -146,8 +132,6 @@ test('.add() returned function should remove the subscription from the subscript
   t.is(api.subscriptions.length, 1);
   unsubscribe();
   t.is(api.subscriptions.length, 0);
-
-  t.end();
 });
 
 test('.add() returned function should throws if the subscriptions list doesn\'t contains the subscription token', t => {
@@ -162,8 +146,6 @@ test('.add() returned function should throws if the subscriptions list doesn\'t 
   api.subscriptions.pop();
   t.is(api.subscriptions.length, 0);
   t.throws(() => unsubscribe());
-
-  t.end();
 });
 
 test('.removeAll() should clear the subscriptions list', t => {
@@ -177,8 +159,6 @@ test('.removeAll() should clear the subscriptions list', t => {
   t.is(api.subscriptions.length, 1);
   api.removeAll();
   t.is(api.subscriptions.length, 0);
-
-  t.end();
 });
 
 test('.removeAll() should unsubscribe all tokens registered via .add()', t => {
@@ -194,8 +174,6 @@ test('.removeAll() should unsubscribe all tokens registered via .add()', t => {
   api.removeAll();
 
   t.is(adapter.unsubscribe.callCount, 3);
-
-  t.end();
 });
 
 test('.publish() should throws if the action received is not a string', t => {
@@ -209,8 +187,6 @@ test('.publish() should throws if the action received is not a string', t => {
   t.throws(() => api.publish(4, {}));
   t.throws(() => api.publish({}, {}));
   t.throws(() => api.publish([], {}));
-
-  t.end();
 });
 
 test('.publish() should invoke .publish() on the given adapter object ', t => {
@@ -223,8 +199,6 @@ test('.publish() should invoke .publish() on the given adapter object ', t => {
 
   t.true(adapter.publish.called);
   t.is(adapter.publish.callCount, 1);
-
-  t.end();
 });
 
 test('.publish() should pass the received action type to the invoked .publish() on the adapter', t => {
@@ -236,7 +210,6 @@ test('.publish() should pass the received action type to the invoked .publish() 
   api.publish('test', {});
 
   t.is(adapter.publish.lastCall.args[0], 'test');
-  t.end();
 });
 
 test('.publish() should pass the received arguments to the invoked .publish() on the adapter', t => {
@@ -252,5 +225,4 @@ test('.publish() should pass the received arguments to the invoked .publish() on
   t.is(adapter.publish.lastCall.args[0], 'test');
   t.is(adapter.publish.lastCall.args[1], param1);
   t.is(adapter.publish.lastCall.args[2], param2);
-  t.end();
 });

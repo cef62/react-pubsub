@@ -8,8 +8,8 @@ import sinon from 'sinon';
 import React, { PropTypes, Component } from 'react';
 import TestUtils from 'react-addons-test-utils';
 import 'babel-core/register';
-import consoleMock from '../helpers/_consoleMock';
-import initJsDom from '../helpers/_document';
+import consoleMock from '../helpers/consoleMock';
+import initJsDom from '../helpers/document';
 import PubSubProvider from '../../src/components/PubSubProvider';
 
 const log = consoleMock(); // eslint-disable-line no-unused-vars
@@ -24,7 +24,7 @@ Child.contextTypes = {
   pubSubCore: PropTypes.object.isRequired,
 };
 
-test.serial('should enforce a single child', t => {
+test('should enforce a single child', t => {
   const pubSubCore = { register() {}, unregister() {} };
 
   // Ignore propTypes warnings
@@ -51,8 +51,6 @@ test.serial('should enforce a single child', t => {
     // Restore PropTypes
     PubSubProvider.propTypes = propTypes;
   }
-
-  t.end();
 });
 
 test('should add the PubSub core to the child context', t => {
@@ -69,7 +67,6 @@ test('should add the PubSub core to the child context', t => {
 
   const child = TestUtils.findRenderedComponentWithType(tree, Child);
   t.is(child.context.pubSubCore, pubSubCore);
-  t.end();
 });
 
 test('should warn only once when receiving a new PubSubCore in props', t => {
@@ -111,6 +108,4 @@ test('should warn only once when receiving a new PubSubCore in props', t => {
 
   t.is(child.context.pubSubCore.unregister(), 15);
   t.is(spy.callCount, 0);
-
-  t.end();
 });

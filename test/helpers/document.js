@@ -1,4 +1,3 @@
-// import ExecutionEnvironment from 'react/lib/ExecutionEnvironment';
 import jsdom from 'jsdom';
 
 export default function jsdomReact() {
@@ -9,11 +8,9 @@ export default function jsdomReact() {
   global.navigator = win.navigator;
 
   const globalKeys = Object.keys(global);
-  Object.keys(win).forEach( key => {
-    if ( !globalKeys.find( gKey => gKey === key ) ) {
+  Object.keys(win).forEach(key => {
+    if (!globalKeys.find(gKey => gKey === key)) {
       global[key] = win[key];
     }
   });
-
-  // ExecutionEnvironment.canUseDOM = true;
 }

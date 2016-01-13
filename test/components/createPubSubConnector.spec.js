@@ -9,8 +9,8 @@ import React, { PropTypes, Component, Children, createClass } from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-addons-test-utils';
 import 'babel-core/register';
-import consoleMock from '../helpers/_consoleMock';
-import initJsDom from '../helpers/_document';
+import consoleMock from '../helpers/consoleMock';
+import initJsDom from '../helpers/document';
 import createPubSubConnector from '../../src/components/createPubSubConnector';
 import createPubSub from '../../src/adapter/createPubSub';
 import subscriptionShape from '../../src/shapes/subscriptionShape';
@@ -59,8 +59,6 @@ test('should add the PubSub core to the child context', t => {
 
   const container = TestUtils.findRenderedComponentWithType(tree, WrapperContainer);
   t.is(container.context.pubSubCore, pubSubCore);
-
-  t.end();
 });
 
 test('should pass props to the given component', t => {
@@ -86,8 +84,6 @@ test('should pass props to the given component', t => {
   t.doesNotThrow(
     () => TestUtils.findRenderedComponentWithType(container, WrapperContainer)
   );
-
-  t.end();
 });
 
 test('should pass pubSub subscriptions as props to the given component', t => {
@@ -126,8 +122,6 @@ test('should pass pubSub subscriptions as props to the given component', t => {
   t.true(subscription.publish.calledOnce);
   t.true(subscription.publish.calledWith('test_action', action));
   t.true(subscription.removeAll.calledOnce);
-
-  t.end();
 });
 
 test('should pass pubSub subscription with a valid shape', t => {
@@ -151,8 +145,6 @@ test('should pass pubSub subscription with a valid shape', t => {
   );
   console.error.restore();
   t.is(spy.callCount, 0);
-
-  t.end();
 });
 
 test('should unsubscribe before unmounting', t => {
@@ -182,8 +174,6 @@ test('should unsubscribe before unmounting', t => {
   t.is(unregisterSpy.callCount, 0);
   ReactDOM.unmountComponentAtNode(div);
   t.is(unregisterSpy.callCount, 1);
-
-  t.end();
 });
 
 test('should hoist non-react statics from wrapped component', t => {
@@ -200,8 +190,6 @@ test('should hoist non-react statics from wrapped component', t => {
   t.is(typeof WrappedContainer.extraMethodSay, 'function');
   t.is(WrappedContainer.extraMethodSay(), 'Hey there!');
   t.is(WrappedContainer.foo, 'bar');
-
-  t.end();
 });
 
 test('should use the pubSub core from the props instead of from the context if present', t => {
@@ -215,8 +203,6 @@ test('should use the pubSub core from the props instead of from the context if p
 
   const container = TestUtils.renderIntoDocument(<WrappedContainer pubSubCore={pubSubCore} />);
   t.is(container.pubSubCore, pubSubCore);
-
-  t.end();
 });
 
 test('should throw an error if the pubSub core is not in the props or context', t => {
@@ -231,8 +217,6 @@ test('should throw an error if the pubSub core is not in the props or context', 
     () => TestUtils.renderIntoDocument(<WrappedContainer />),
     /Could not find "pubSubCore"/
   );
-
-  t.end();
 });
 
 
@@ -262,8 +246,6 @@ test('should return the instance of the wrapped component for use in calling chi
   t.throws(() => decorated.someInstanceMethod());
   t.is(decorated.getWrappedInstance().someInstanceMethod(), someData);
   t.is(decorated.refs.wrappedInstance.someInstanceMethod(), someData);
-
-  t.end();
 });
 
 test('should subscribe pure function components to the pubSub core', t => {
@@ -302,8 +284,6 @@ test('should subscribe pure function components to the pubSub core', t => {
   t.true(subscription.publish.calledOnce);
   t.true(subscription.publish.calledWith('test_action', action));
   t.true(subscription.removeAll.calledOnce);
-
-  t.end();
 });
 
 // TODO: improve this test, splitting it in more atomic scenarios
@@ -372,8 +352,6 @@ test(
 
     pubSub.publish(SPEAK, 'New Message');
     t.is(stub.props.lastMessage, 'New Message');
-
-    t.end();
   }
 );
 
@@ -441,8 +419,6 @@ test(
     nowValue = stub.props.otherNow;
     wrapper.setState({ updateField: 'color' });
     t.is(stub.props.otherNow, nowValue);
-
-    t.end();
   }
 );
 
@@ -494,8 +470,6 @@ test('should not invoke mapPublish when props change if it only has one argument
   outerComponent.setFoo('DID');
 
   t.is(invocationCount, 1);
-
-  t.end();
 });
 
 // TODO: create a similar test for 'mapSubscriptionsToProps'
@@ -549,8 +523,6 @@ test('should invoke mapPublish every time props are changed if it has a second a
 
   t.is(invocationCount, 3);
   t.same(propsPassedIn, { foo: 'DID' });
-
-  t.end();
 });
 
 test('should pass publish and avoid subscription if arguments are falsy', t => {
@@ -588,8 +560,6 @@ test('should pass publish and avoid subscription if arguments are falsy', t => {
   runCheck();
   runCheck(null, null, null);
   runCheck(false, false, false);
-
-  t.end();
 });
 
 test('should set the displayName correctly', t => {
@@ -614,8 +584,6 @@ test('should set the displayName correctly', t => {
     },
   });
   t.is(createPubSubConnector()(Comp).displayName, 'PubSubConnector(Component)');
-
-  t.end();
 });
 
 test('should expose the wrapped component as WrappedComponent', t => {
@@ -627,7 +595,6 @@ test('should expose the wrapped component as WrappedComponent', t => {
   const decorated = createPubSubConnector()(Container);
 
   t.is(decorated.WrappedComponent, Container);
-  t.end();
 });
 
 test('should throw when trying to access the wrapped instance if withRef is not specified', t => {
@@ -652,8 +619,6 @@ test('should throw when trying to access the wrapped instance if withRef is not 
     () => decorated.getWrappedInstance(),
     /To access the wrapped instance, you need to specify explicitly \{ withRef: true \} in the options passed to the createPubSubConnector\(\) call\./
   );
-
-  t.end();
 });
 
 test('should return the instance of the wrapped component for use in calling child methods', t => {
@@ -685,8 +650,6 @@ test('should return the instance of the wrapped component for use in calling chi
   t.throws(() => decorated.someInstanceMethod());
   t.is(decorated.getWrappedInstance().someInstanceMethod(), someData);
   t.is(decorated.refs.wrappedInstance.someInstanceMethod(), someData);
-
-  t.end();
 });
 
 test(
@@ -725,8 +688,6 @@ test(
     pubSub.publish(SIMPLE_UPDATE, 'Italy');
     t.is(stub.props.country, 'Italy');
     t.is(stub.props.other.length, 1);
-
-    t.end();
   }
 );
 
@@ -774,8 +735,6 @@ test(
     pubSub.publish(SIMPLE_UPDATE, 'Italy');
     t.is(stub.props.country, 'Italy');
     t.notOk(stub.props.other.length);
-
-    t.end();
   }
 );
 
@@ -803,8 +762,6 @@ test(
     t.doesNotThrow(() => createPubSubConnector({})(Container));
     t.doesNotThrow(() => createPubSubConnector({ action: () => {} })(Container));
     t.doesNotThrow(() => createPubSubConnector(() => {})(Container));
-
-    t.end();
   }
 );
 
@@ -837,8 +794,6 @@ test(
         </ProviderMock>
       )
     );
-
-    t.end();
   }
 );
 
@@ -874,8 +829,6 @@ test(
     t.is(typeof spy.lastCall.args[1], 'function'); // update method
     t.is(typeof spy.lastCall.args[2], 'function'); // get current props method
     t.same(spy.lastCall.args[2](), { color: 'red' });
-
-    t.end();
   }
 );
 
@@ -928,8 +881,6 @@ test(
       )
       // /'pubSubConnector' expected an object returned from given \.applySubscription\(\) method\. Instead received:/
     );
-
-    t.end();
   }
 );
 
@@ -956,8 +907,6 @@ test(
     );
 
     t.false(spy.calledOnce);
-
-    t.end();
   }
 );
 
@@ -986,8 +935,6 @@ test(
 
     t.is(stub.props.color, 'red');
     t.same(stub.props.info, { name: 'mike' });
-
-    t.end();
   }
 );
 
@@ -1033,8 +980,6 @@ test(
     owner.setState({ receivedName: 'john' });
     owner.setState({ receivedName: 'jake' });
     t.is(spy.callCount, 4);
-
-    t.end();
   }
 );
 
@@ -1081,8 +1026,6 @@ test(
     t.same(stub.props.info, { name: 'mike' });
     owner.setState({ receivedName: 'john' });
     t.same(stub.props.info, { name: 'john' });
-
-    t.end();
   }
 );
 
@@ -1127,8 +1070,6 @@ test(
     t.is(stub.props.name, 'mike');
     pubSub.publish(ACTION, 'tyson');
     t.is(stub.props.name, 'mike [tyson]');
-
-    t.end();
   }
 );
 
@@ -1164,7 +1105,5 @@ test(
     const stub = TestUtils.findRenderedComponentWithType(tree, Passthrough);
 
     t.is(stub.props.country, undefined);
-
-    t.end();
   }
 );

@@ -1,7 +1,7 @@
 import test from 'ava';
 import sinon from 'sinon';
 import 'babel-core/register';
-import consoleMock from '../helpers/_consoleMock';
+import consoleMock from '../helpers/consoleMock';
 import createPubSub from '../../src/adapter/createPubSub';
 
 const log = consoleMock(); // eslint-disable-line no-unused-vars
@@ -11,15 +11,12 @@ test('should return an object with a valid pubSubCore interface', t => {
 
   t.true(typeof pubSubCore.register === 'function');
   t.true(typeof pubSubCore.unregister === 'function');
-
-  t.end();
 });
 
 test('should use a default map when subscribersMap is undefined', t => {
   const pubSubCore = createPubSub();
   const fakeComp = 'TEST';
   t.doesNotThrow(() => pubSubCore.register(fakeComp));
-  t.end();
 });
 
 test('should use subscribersMap when passed', t => {
@@ -30,8 +27,6 @@ test('should use subscribersMap when passed', t => {
 
   t.is(map[fakeComp], pubSub);
   t.is(Object.keys(map)[0], fakeComp);
-
-  t.end();
 });
 
 test.skip('should use the default pub-sub adapter when `adapter` is undefined', t => {
@@ -39,7 +34,6 @@ test.skip('should use the default pub-sub adapter when `adapter` is undefined', 
   const pubSubCore = createPubSub();
   const fakeComp = 'TEST';
   t.doesNotThrow(() => pubSubCore.register(fakeComp));
-  t.end();
 });
 
 test('should use `adapter` when passed', t => {
@@ -53,7 +47,6 @@ test('should use `adapter` when passed', t => {
   pubSub.add('test', () => {});
 
   t.true(adapter.subscribe.called);
-  t.end();
 });
 
 test('.register() should return an object with a valid interface', t => {
@@ -66,8 +59,6 @@ test('.register() should return an object with a valid interface', t => {
   t.true(typeof pubSub.removeAll === 'function');
   t.true(typeof pubSub.publish === 'function');
   t.true(typeof pubSub.unsubscribe === 'function');
-
-  t.end();
 });
 
 test('.register() should throws when invoked with falsy target component', t => {
@@ -81,8 +72,6 @@ test('.register() should throws when invoked with falsy target component', t => 
     () => pubSubCore.register(null),
     /'createPubSub\.register\(\)' expected a component instead received\:/
   );
-
-  t.end();
 });
 
 test('.unregister() should unregister a component registerd with .register()', t => {
@@ -102,7 +91,6 @@ test('.unregister() should unregister a component registerd with .register()', t
   pubSub.publish('test', 'testInvocation');
 
   t.is(spy.callCount, 1);
-  t.end();
 });
 
 test('.unregister() should print an error when receive a component not registered', t => {
@@ -113,8 +101,6 @@ test('.unregister() should print an error when receive a component not registere
   pubSubCore.unregister('otherTest');
   console.error.restore(); // eslint-disable-line no-console
   t.is(spy.callCount, 1);
-
-  t.end();
 });
 
 
@@ -130,6 +116,4 @@ test('.unregister() should throws when invoked with falsy target component', t =
     () => pubSubCore.unregister(null),
     /'createPubSub\.unregister\(\)' expected a component instead received\:/
   );
-
-  t.end();
 });

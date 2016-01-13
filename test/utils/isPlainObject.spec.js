@@ -13,6 +13,4 @@ test('should return true only if plain object', t => {
   t.is(isPlainObject(null), false);
   t.is(isPlainObject(), false);
   t.is(isPlainObject({ 'x': 1, 'y': 2 }), true);
-
-  t.end();
 });

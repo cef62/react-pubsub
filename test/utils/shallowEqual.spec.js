@@ -18,8 +18,6 @@ test('should return true if arguments fields are equal', t => {
     { a: 1, b: 2, c: o },
     { a: 1, b: 2, c: o }
   ), true);
-
-  t.end();
 });
 
 test('should return false if first argument has too many keys', t => {
@@ -27,8 +25,6 @@ test('should return false if first argument has too many keys', t => {
     { a: 1, b: 2, c: 3 },
     { a: 1, b: 2 }
   ), false);
-
-  t.end();
 });
 
 test('should return false if second argument has too many keys', t => {
@@ -36,8 +32,6 @@ test('should return false if second argument has too many keys', t => {
     { a: 1, b: 2 },
     { a: 1, b: 2, c: 3 }
   ), false);
-
-  t.end();
 });
 
 test('should return false if arguments have different keys', t => {
@@ -45,6 +39,4 @@ test('should return false if arguments have different keys', t => {
     { a: 1, b: 2, c: undefined },
     { a: 1, bb: 2, c: undefined }
   ), false);
-
-  t.end();
 });
