@@ -7,7 +7,9 @@ const warnOfCoreChanges = () => {
     return;
   }
   didWarnAboutCoreChanged = true;
-  console.error(`<PubSubProvider> currently can't dynamically change the pubSubCore!`); // eslint-disable-line no-console
+  console.error( // eslint-disable-line no-console
+    `<PubSubProvider> currently can't dynamically change the pubSubCore!`
+  );
 };
 
 export default class PubSubProvider extends Component {

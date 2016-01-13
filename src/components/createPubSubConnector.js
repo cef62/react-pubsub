@@ -100,7 +100,11 @@ function wrapPublishMethods(mapPublishToProps) {
   }, {});
 }
 
-export default function createPubSubConnector(mapSubscriptionsToProps, mapPublishToProps, options = {}) {
+export default function createPubSubConnector(
+  mapSubscriptionsToProps,
+  mapPublishToProps,
+  options = {}
+) {
   if (
     mapSubscriptionsToProps &&
     (typeof mapSubscriptionsToProps !== 'function' && !isPlainObject(mapSubscriptionsToProps))
@@ -110,13 +114,15 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
       + ` or a plain object, instead received: ${mapSubscriptionsToProps}.`
     );
   }
-  const shouldMapSubscriptions = isPlainObject(mapSubscriptionsToProps) ? Object.keys(mapSubscriptionsToProps).length : Boolean(mapSubscriptionsToProps);
+  const shouldMapSubscriptions = isPlainObject(mapSubscriptionsToProps) ?
+    Object.keys(mapSubscriptionsToProps).length : Boolean(mapSubscriptionsToProps);
 
   let finalMapSubscriptionsToProps = defaultMapSubscriptionsToProps;
   let doSubscribedPropsDependOnOwnProps = false;
 
 
-  const finalMapPublishToProps = isPlainObject(mapPublishToProps) ? wrapPublishMethods(mapPublishToProps) : mapPublishToProps || defaultMapPublishToProps;
+  const finalMapPublishToProps = isPlainObject(mapPublishToProps) ?
+    wrapPublishMethods(mapPublishToProps) : mapPublishToProps || defaultMapPublishToProps;
   const doPublishPropsDependOnOwnProps = finalMapPublishToProps.length > 1;
 
   const { withRef = false } = options || {};
@@ -133,7 +139,8 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
   }
 
   function computeSubscribedProps(props) {
-    const subscribedProps = doSubscribedPropsDependOnOwnProps ? finalMapSubscriptionsToProps(props) : finalMapSubscriptionsToProps();
+    const subscribedProps = doSubscribedPropsDependOnOwnProps ?
+      finalMapSubscriptionsToProps(props) : finalMapSubscriptionsToProps();
 
     if (!isPlainObject(subscribedProps)) {
       throw new Error(
@@ -146,7 +153,8 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
 
   function computePublishProps(pubSub, props) {
     const { publish } = pubSub;
-    const publishProps = doPublishPropsDependOnOwnProps ? finalMapPublishToProps(publish, props) : finalMapPublishToProps(publish);
+    const publishProps = doPublishPropsDependOnOwnProps ?
+      finalMapPublishToProps(publish, props) : finalMapPublishToProps(publish);
 
     if (!isPlainObject(publishProps)) {
       throw new Error(
@@ -264,7 +272,8 @@ export default function createPubSubConnector(mapSubscriptionsToProps, mapPublis
         let shouldUpdateSubscribedProps = true;
         let shouldUpdatePublishProps = true;
         if (renderedElement) {
-          shouldUpdateSubscribedProps = hasSubscribedPropsChanged || (haveOwnPropsChanged && doSubscribedPropsDependOnOwnProps);
+          shouldUpdateSubscribedProps = hasSubscribedPropsChanged ||
+            (haveOwnPropsChanged && doSubscribedPropsDependOnOwnProps);
           shouldUpdatePublishProps = haveOwnPropsChanged && doPublishPropsDependOnOwnProps;
         }
 

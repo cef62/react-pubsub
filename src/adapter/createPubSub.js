@@ -16,7 +16,10 @@ const createPubSub = (subscribersMap = {}, adapter = createDefaultAdapter()) => 
   const api = {
     register(component) {
       if (!component) {
-        throw new Error(`'createPubSub.register()' expected a component instead received: ${component}`);
+        throw new Error(
+          `'createPubSub.register()' expected a component instead `
+          + `received: ${component}`
+        );
       }
       if (!subscribersMap[component]) {
         const unsubscribe = () => api.unregister(component);
@@ -26,13 +29,18 @@ const createPubSub = (subscribersMap = {}, adapter = createDefaultAdapter()) => 
     },
     unregister(component) {
       if (!component) {
-        throw new Error(`'createPubSub.unregister()' expected a component instead received: ${component}`);
+        throw new Error(
+          `'createPubSub.unregister()' expected a component instead `
+          + `received: ${component}`
+        );
       }
       if (subscribersMap[component]) {
         subscribersMap[component].removeAll();
         delete subscribersMap[component];
       } else {
-        console.error(`${component.displayName} is NOT registerd to PubSub`); // eslint-disable-line no-console
+        console.error( // eslint-disable-line no-console
+          `${component.displayName} is NOT registerd to PubSub`
+        );
       }
     },
   };

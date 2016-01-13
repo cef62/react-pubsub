@@ -7,11 +7,16 @@
    */
 const createSubscription = (adapter, unsubscribe) => {
   if (!adapter) {
-    throw new Error(`'createSubscription()' expected an adapter as first argument instead received: ${adapter}`);
+    throw new Error(
+      `'createSubscription()' expected an adapter as first argument instead received: ${adapter}`
+    );
   }
 
   if (!unsubscribe) {
-    throw new Error(`'createSubscription()' expected a function as second argument instead received: ${unsubscribe}`);
+    throw new Error(
+      `'createSubscription()' expected a function as second argument instead `
+      + `received: ${unsubscribe}`
+    );
   }
 
   const sub = {
@@ -20,11 +25,16 @@ const createSubscription = (adapter, unsubscribe) => {
 
     add(action, cb) {
       if (!action || typeof action !== 'string') {
-        throw new Error(`Subscription '.add()' expected an action (string) as first argument instead received: ${action}`);
+        throw new Error(
+          `Subscription '.add()' expected an action (string) as first argument `
+          + `instead received: ${action}`
+        );
       }
 
       if (!cb || typeof cb !== 'function') {
-        throw new Error(`Subscription '.add()' expected a function as second argument instead received: ${cb}`);
+        throw new Error(
+          `Subscription '.add()' expected a function as second argument instead received: ${cb}`
+        );
       }
 
       const token = adapter.subscribe(action, cb);
@@ -46,7 +56,9 @@ const createSubscription = (adapter, unsubscribe) => {
 
     publish(action, ...params) {
       if (!action || typeof action !== 'string') {
-        throw new Error(`Subscription '.publish()' expected an action (string) as first argument instead received: ${action}`);
+        throw new Error(
+          `Subscription '.publish()' expected an action (string) as first argument `
+          + `instead received: ${action}`);
       }
 
       adapter.publish(action, ...params);
