@@ -9,7 +9,7 @@ const createPostalAdapter = (channelName = 'reactPubSub') => {
     unsubscribe() {
       channel.unsubscribe();
     },
-    publish(action, data) {
+    publish(action, ...data) {
       channel.publish(action, ...data);
     },
   };
