@@ -1,6 +1,7 @@
 'use strict';
 
 var webpack = require('webpack');
+var path = require('path');
 
 var reactExternal = {
   root: 'React',
@@ -14,11 +15,6 @@ var plugins = [
   new webpack.DefinePlugin({
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
   }),
-  new webpack.optimize.CommonsChunkPlugin({
-    name: "global",
-    chunks: ["main"], // important because elsewise it would use "vendor" too
-    minChunks: Infinity
-  })
 ];
 
 if (process.env.NODE_ENV === 'production') {
@@ -38,11 +34,12 @@ module.exports = {
     loaders: [{
       test: /\.js$/,
       loaders: ['babel-loader'],
-      exclude: /node_modules/
+      exclude: /node_modules/,
+      include: path.join(__dirname, 'src')
     }]
   },
   output: {
-    library: 'react-pubsub',
+    library: 'reactPubsub',
     libraryTarget: 'umd'
   },
   plugins: plugins,
