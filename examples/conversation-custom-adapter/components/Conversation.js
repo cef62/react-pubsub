@@ -4,8 +4,17 @@ import { createPubSubConnector } from 'react-pubsub';
 import subscriptionShape from 'react-pubsub/shapes/subscriptionShape';
 
 class Conversation extends Component {
+  constructor(props, context) {
+    super(props, context);
+    this.conversation = '';
+  }
+
+  componentWillUpdate({ lastMessage = '' }) {
+    this.conversation = `${this.conversation}\n${lastMessage}`;
+  }
+
   render() {
-    const { conversation } = this.props;
+    const { conversation } = this;
     return (
       <div>
         <textarea rows="20" cols="50" value={conversation} readOnly/>
@@ -16,20 +25,13 @@ class Conversation extends Component {
 
 Conversation.propTypes = {
   pubSub: subscriptionShape.isRequired,
-  conversation: PropTypes.string,
+  lastMessage: PropTypes.string,
 };
 
-Conversation.defaultProps = {
-  conversation: '',
-};
-
-const mapSubscriptionsToProps = {
-  [TALK]: (res = {}, ownProps) => {
-    const { msg, owner } = res;
-    const { conversation: oldConversation = '' } = ownProps;
-    const conversation = `${oldConversation}\n[${owner}]: ${msg}`;
-    return { conversation };
+const subscriptionsToPros = {
+  [TALK]: ({ msg, owner }) => {
+    return { lastMessage: `[${owner}]: ${msg}` };
   },
 };
 
-export default createPubSubConnector(mapSubscriptionsToProps)(Conversation);
+export default createPubSubConnector(subscriptionsToPros)(Conversation);
