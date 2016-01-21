@@ -13,8 +13,9 @@ class ConnectedUser extends Component {
   talk() {
     const { talkAction, owner } = this.props;
     const { msg } = this.state;
+    const timestamp = new Date();
 
-    talkAction({ msg, owner });
+    talkAction({ msg, owner, timestamp });
   }
 
   inputChanged(evt) {

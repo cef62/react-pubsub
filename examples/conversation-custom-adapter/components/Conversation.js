@@ -29,8 +29,8 @@ Conversation.propTypes = {
 };
 
 const subscriptionsToPros = {
-  [TALK]: ({ msg, owner }) => {
-    return { lastMessage: `[${owner}]: ${msg}` };
+  [TALK]: ({ msg, owner, timestamp }) => {
+    return { lastMessage: `[${owner}](${timestamp.toLocaleTimeString()}): ${msg}` };
   },
 };
 

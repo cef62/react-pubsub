@@ -20,7 +20,8 @@ export default class User extends Component {
     const { owner } = this.props;
     const { publish } = this.pubSub;
     const { message: msg } = this.state;
-    publish(TALK, { msg, owner });
+    const timestamp = new Date();
+    publish(TALK, { msg, owner, timestamp });
   }
 
   inputChanged(evt) {
