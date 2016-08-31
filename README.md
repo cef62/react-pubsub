@@ -22,10 +22,10 @@ npm install --save react-pubsub
 
 ## Using other build systems
 
-If you are using *bower* or other build system an [UMD](https://github.com/umdjs/umd) build is available at [npmcdn.com](https://npmcdn.com):
+If you are using *bower* or other build system an [UMD](https://github.com/umdjs/umd) build is available at [unpkg.com](https://unpkg.com):
 
-* **UMD uncompressed**: [react-pubsub.js](https://npmcdn.com/react-pubsub/dist/react-pubsub.js)
-* **UMD compressed**: [react-pubsub.min.js](https://npmcdn.com/react-pubsub/dist/react-pubsub.min.js)
+* **UMD uncompressed**: [react-pubsub.js](https://unpkg.com/react-pubsub/dist/react-pubsub.js)
+* **UMD compressed**: [react-pubsub.min.js](https://unpkg.com/react-pubsub/dist/react-pubsub.min.js)
 
 Using the *UMD* build `react-pubsub` is available as a global object.
 
